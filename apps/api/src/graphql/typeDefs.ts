@@ -64,6 +64,7 @@ export const typeDefs = `#graphql
 
   type SeedResult {
     count: Int!
+    total: Int!
     source: String!
   }
 
@@ -90,6 +91,7 @@ export const typeDefs = `#graphql
 
   type Query {
     me: User
+    allUsers: [User!]!
     nextName: Name
     likedNames: [Name!]!
     dislikedNames: [Name!]!

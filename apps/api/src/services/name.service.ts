@@ -1,76 +1,93 @@
-import { db } from '../db/client';
-import { names, preferences, reviews } from '@little-origin/core';
+import {
+	DEFAULT_PREFERENCES,
+	SUPPORTED_COUNTRIES,
+	names,
+	preferences,
+	reviews,
+} from '@little-origin/core';
 import { getNamesByCountries } from '@little-origin/name-data';
-import { eq, notInArray, and, inArray, sql } from 'drizzle-orm';
-import { DEFAULT_PREFERENCES, SUPPORTED_COUNTRIES } from '@little-origin/core/src/constants';
+import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import { db } from '../db/client';
 
 export class NameService {
-  async seedNames(countToSeed = 250) {
-    // Get preferences (singleton) - only used for gender/maxCharacters
-    const prefsList = await db.select().from(preferences).limit(1);
-    const prefs = prefsList[0] || DEFAULT_PREFERENCES;
+	private static readonly BATCH_SIZE = 100;
 
-    // Load static names for ALL countries, not just user preferences
-    const allCountryCodes = SUPPORTED_COUNTRIES.map((c) => c.code);
-    const staticNames = getNamesByCountries(allCountryCodes, prefs.genderPreference, prefs.maxCharacters);
+	/**
+	 * Seed all names from all available countries.
+	 * Inserts in batches to avoid SQLite limits.
+	 */
+	async seedNames() {
+		// Get preferences (singleton) - only used for gender/maxCharacters
+		const prefsList = await db.select().from(preferences).limit(1);
+		const prefs = prefsList[0] || DEFAULT_PREFERENCES;
 
-    if (staticNames.length === 0) return { count: 0, source: 'static' };
+		// Load static names for ALL countries
+		const allCountryCodes = SUPPORTED_COUNTRIES.map((c) => c.code);
+		const staticNames = getNamesByCountries(
+			allCountryCodes,
+			prefs.genderPreference,
+			prefs.maxCharacters,
+		);
 
-    // Insert (on conflict do nothing)
-    const values = staticNames.slice(0, countToSeed).map((n) => ({
-      name: n.name,
-      gender: n.gender,
-      originCountry: n.country,
-      source: 'static' as const,
-    }));
+		if (staticNames.length === 0) {
+			return { count: 0, total: 0, source: 'static' };
+		}
 
-    // Chunk insert to avoid sqlite limits if necessary, but 250 is fine.
-    // Drizzle's onConflictDoNothing needs target.
-    // We already defined uniqueNameGender constraint in schema.
+		// Prepare all values for insertion
+		const allValues = staticNames.map((n) => ({
+			name: n.name,
+			gender: n.gender,
+			originCountry: n.country,
+			source: 'static' as const,
+		}));
 
-    // SQLite insert or ignore
-    const start = Date.now();
-    let insertedCount = 0;
+		// Insert in batches to avoid SQLite variable limits
+		let insertedCount = 0;
+		const totalNames = allValues.length;
 
-    // Naive implementation: insert one by one or in batches with proper handling
-    // Drizzle `onConflictDoNothing` works with SQLite
-    const res = await db.insert(names).values(values).onConflictDoNothing().returning();
-    insertedCount = res.length;
+		for (let i = 0; i < totalNames; i += NameService.BATCH_SIZE) {
+			const batch = allValues.slice(i, i + NameService.BATCH_SIZE);
+			const res = await db.insert(names).values(batch).onConflictDoNothing().returning();
+			insertedCount += res.length;
+		}
 
-    return { count: insertedCount, source: 'static' };
-  }
+		return { count: insertedCount, total: totalNames, source: 'static' };
+	}
 
-  async getNextName(userId: number) {
-    // Get preferences
-    const prefsList = await db.select().from(preferences).limit(1);
-    const prefs = prefsList[0] || DEFAULT_PREFERENCES;
+	async getNextName(userId: number) {
+		// Get preferences
+		const prefsList = await db.select().from(preferences).limit(1);
+		const prefs = prefsList[0] || DEFAULT_PREFERENCES;
 
-    // Subquery: names reviewed by user
-    const reviewedIdsQuery = db.select({ nameId: reviews.nameId }).from(reviews).where(eq(reviews.userId, userId));
+		// Subquery: names reviewed by user
+		const reviewedIdsQuery = db
+			.select({ nameId: reviews.nameId })
+			.from(reviews)
+			.where(eq(reviews.userId, userId));
 
-    // Build filters
-    const filters = [notInArray(names.id, reviewedIdsQuery)];
+		// Build filters
+		const filters = [notInArray(names.id, reviewedIdsQuery)];
 
-    if (prefs.genderPreference !== 'both') {
-      filters.push(eq(names.gender, prefs.genderPreference as 'male' | 'female'));
-    }
+		if (prefs.genderPreference !== 'both') {
+			filters.push(eq(names.gender, prefs.genderPreference as 'male' | 'female'));
+		}
 
-    if (prefs.countryOrigins && prefs.countryOrigins.length > 0) {
-      filters.push(inArray(names.originCountry, prefs.countryOrigins));
-    }
+		if (prefs.countryOrigins && prefs.countryOrigins.length > 0) {
+			filters.push(inArray(names.originCountry, prefs.countryOrigins));
+		}
 
-    if (prefs.maxCharacters) {
-      filters.push(sql`length(${names.name}) <= ${prefs.maxCharacters}`);
-    }
+		if (prefs.maxCharacters) {
+			filters.push(sql`length(${names.name}) <= ${prefs.maxCharacters}`);
+		}
 
-    const result = await db
-      .select()
-      .from(names)
-      .where(and(...filters))
-      .limit(1);
+		const result = await db
+			.select()
+			.from(names)
+			.where(and(...filters))
+			.limit(1);
 
-    return result[0] || null;
-  }
+		return result[0] || null;
+	}
 }
 
 export const nameService = new NameService();

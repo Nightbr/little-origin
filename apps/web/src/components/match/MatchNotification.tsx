@@ -1,12 +1,22 @@
 import { useSubscription } from '@apollo/client';
-import { MATCH_CREATED_SUBSCRIPTION } from '../../graphql/operations';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { MATCH_CREATED_SUBSCRIPTION } from '../../graphql/operations';
+
+interface MatchUser {
+	id: string;
+	username: string;
+}
+
+interface MatchData {
+	name: { name: string };
+	likedBy: MatchUser[];
+}
 
 export function MatchNotification() {
 	const { data } = useSubscription(MATCH_CREATED_SUBSCRIPTION);
 	const [show, setShow] = useState(false);
-	const [match, setMatch] = useState<any>(null);
+	const [match, setMatch] = useState<MatchData | null>(null);
 
 	useEffect(() => {
 		if (data?.matchCreated) {
@@ -37,9 +47,10 @@ export function MatchNotification() {
 							{match.name.name}
 						</div>
 						<p className="text-muted-foreground mb-4">
-							Liked by {match.likedBy.map((u: any) => u.username).join(' & ')}
+							Liked by {match.likedBy.map((u) => u.username).join(' & ')}
 						</p>
 						<button
+							type="button"
 							onClick={() => setShow(false)}
 							className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-bold"
 						>

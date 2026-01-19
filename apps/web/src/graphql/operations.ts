@@ -9,6 +9,15 @@ export const ME_QUERY = gql`
   }
 `;
 
+export const ALL_USERS_QUERY = gql`
+  query AllUsers {
+    allUsers {
+      id
+      username
+    }
+  }
+`;
+
 export const NEXT_NAME_QUERY = gql`
   query NextName {
     nextName {

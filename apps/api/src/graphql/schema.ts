@@ -1,8 +1,9 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { typeDefs } from './typeDefs';
+import type { IResolvers } from '@graphql-tools/utils';
 import { resolvers } from './resolvers';
+import { typeDefs } from './typeDefs';
 
 export const schema = makeExecutableSchema({
 	typeDefs,
-	resolvers: resolvers as any, // TS check workaround for merge result
+	resolvers: resolvers as IResolvers,
 });

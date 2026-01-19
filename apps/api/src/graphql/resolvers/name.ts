@@ -1,14 +1,15 @@
 import { nameService } from '../../services/name.service';
+import type { GraphQLContext } from '../types';
 
 export const nameResolvers = {
 	Query: {
-		nextName: async (_: any, __: any, context: any) => {
+		nextName: async (_: unknown, __: unknown, context: GraphQLContext) => {
 			if (!context.user) throw new Error('Unauthorized');
 			return nameService.getNextName(context.user.id);
 		},
 	},
 	Mutation: {
-		seedNames: async (_: any, __: any, context: any) => {
+		seedNames: async (_: unknown, __: unknown, _context: GraphQLContext) => {
 			// Typically admin only, but for MVP allow anyone or check auth
 			return nameService.seedNames();
 		},

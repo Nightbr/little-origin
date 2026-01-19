@@ -1,9 +1,16 @@
 import { mergeResolvers } from '@graphql-tools/merge';
-import { authResolvers } from './auth';
-import { nameResolvers } from './name';
-import { reviewResolvers } from './review';
-import { matchResolvers } from './match';
-import { preferenceResolvers } from './preference';
 import { appResolvers } from './app';
+import { authResolvers } from './auth';
+import { matchResolvers } from './match';
+import { nameResolvers } from './name';
+import { preferenceResolvers } from './preference';
+import { reviewResolvers } from './review';
 
-export const resolvers = mergeResolvers([authResolvers, nameResolvers, reviewResolvers, matchResolvers, preferenceResolvers, appResolvers]);
+export const resolvers = mergeResolvers([
+	authResolvers,
+	nameResolvers,
+	reviewResolvers,
+	matchResolvers,
+	preferenceResolvers,
+	appResolvers,
+]);

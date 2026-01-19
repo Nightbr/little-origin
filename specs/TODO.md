@@ -2,15 +2,6 @@
 
 ## High Priority (MVP Refinement)
 
-### Onboarding & User Management
-
-- [x] **Onboarding Rework**: Redirect to `/onboarding` if no users exist in the database.
-- [x] **Onboarding Step 1**: Interface to add one or more users (partners/family).
-- [x] **Onboarding Step 2**: Configure global preferences (Gender, Countries, Length).
-- [x] **Onboarding Step 3**: Trigger initial name seeding into the database.
-- [x] **Post-Onboarding**: Require login after the onboarding flow is completed.
-- [x] **Add User Flow**: New page/menu entry for logged users to add more family members.
-
 ### Filtering & Search
 
 - [ ] **Liked/Disliked List Filters**: Filter by gender and country origin.
