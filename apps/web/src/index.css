@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Branding: The Seedling Palette (Light Theme) */
+
+    /* Calm Ivory: #F5F5F0 */
+    --background: 60 14% 95%;
+    --foreground: 120 3% 24%; /* Charcoal #3D403D */
+
+    /* Card/Surface (Subtle border/shadow) */
+    --card: 0 0% 100%;
+    --card-foreground: 120 3% 24%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 120 3% 24%;
+
+    /* Primary: Warm Clay #D88C74 */
+    --primary: 15 57% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Sage Green #A8B8A0 */
+    --secondary: 98 15% 68%;
+    --secondary-foreground: 120 3% 24%;
+
+    /* Muted */
+    --muted: 60 10% 90%;
+    --muted-foreground: 120 3% 40%;
+
+    /* Accent: Sage Green but lighter/darker depending on use */
+    --accent: 98 15% 85%;
+    --accent-foreground: 120 3% 24%;
+
+    /* Destructive/Error: Softer Red #E28C8C */
+    --destructive: 0 54% 72%;
+    --destructive-foreground: 0 0% 10%;
+
+    /* Success: Softer Green #8EB897 */
+    --success: 140 22% 64%;
+    --success-foreground: 0 0% 10%;
+
+    --border: 98 15% 80%; /* Sage border */
+    --input: 98 15% 85%;
+    --ring: 15 57% 65%;
+
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Nunito', sans-serif;
+    @apply font-bold;
+  }
+}

@@ -1,0 +1,26 @@
+[tools]
+node = "24"
+pnpm = "10"
+
+[env]
+NODE_ENV = "development"
+
+[tasks.dev]
+description = "Start development servers"
+run = "turbo dev"
+
+[tasks.build]
+description = "Build all packages and apps"
+run = "turbo build"
+
+[tasks.lint]
+run = "turbo lint"
+
+[tasks.format]
+run = "turbo format"
+
+[tasks.typecheck]
+run = "turbo typecheck"
+
+[tasks.test]
+run = "turbo test"
