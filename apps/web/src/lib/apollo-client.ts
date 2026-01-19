@@ -6,8 +6,10 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { createClient } from 'graphql-ws';
 import { clearAccessToken, getAccessToken } from './auth-token';
 
-const API_URL = 'http://localhost:3000/graphql';
-const WS_URL = 'ws://localhost:3000/graphql';
+// Use relative URL - works with any domain/port since API serves the frontend
+const API_URL = '/graphql';
+// Dynamically construct WebSocket URL based on current location
+const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`;
 
 // Track consecutive 403 errors to trigger logout
 let consecutiveAuthErrors = 0;
