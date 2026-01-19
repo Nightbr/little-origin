@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_PREFERENCES_QUERY, UPDATE_PREFERENCES_MUTATION } from '@/graphql/operations';
 import { Settings, Save, Check } from 'lucide-react';
@@ -6,6 +6,11 @@ import { useState, useEffect } from 'react';
 import { SUPPORTED_COUNTRIES } from '@little-origin/core';
 
 export const Route = createFileRoute('/preferences')({
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: PreferencesView,
 });
 

@@ -1,10 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery } from '@apollo/client';
 import { ALL_MATCHES_QUERY, MATCH_CREATED_SUBSCRIPTION } from '@/graphql/operations';
 import { Users, PartyPopper } from 'lucide-react';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/matches')({
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: () => (
     <div className='p-8 max-w-4xl mx-auto w-full'>
       <header className='mb-12'>

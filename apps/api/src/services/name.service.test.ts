@@ -43,7 +43,7 @@ describe('NameService Integration Tests', () => {
     await db.delete(names);
     await db.insert(names).values([
       { name: 'Alice', gender: 'female', originCountry: 'FR', source: 'static' },
-      { name: 'Bob', male: 'male', originCountry: 'US', source: 'static', gender: 'male' },
+      { name: 'Bob', gender: 'male', originCountry: 'US', source: 'static' },
       { name: 'Catherine', gender: 'female', originCountry: 'US', source: 'static' },
       { name: 'Diego', gender: 'male', originCountry: 'ES', source: 'static' },
     ]);

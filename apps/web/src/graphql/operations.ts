@@ -23,7 +23,7 @@ export const NEXT_NAME_QUERY = gql`
 export const LOGIN_MUTATION = gql`
   mutation Login($username: String!, $password: String!) {
     login(username: $username, password: $password) {
-      token
+      accessToken
       user {
         id
         username
@@ -35,7 +35,25 @@ export const LOGIN_MUTATION = gql`
 export const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $password: String!) {
     register(username: $username, password: $password) {
-      token
+      accessToken
+      user {
+        id
+        username
+      }
+    }
+  }
+`;
+
+export const LOGOUT_MUTATION = gql`
+  mutation Logout {
+    logout
+  }
+`;
+
+export const REFRESH_TOKEN_MUTATION = gql`
+  mutation RefreshToken {
+    refreshToken {
+      accessToken
       user {
         id
         username
@@ -124,5 +142,42 @@ export const MATCH_CREATED_SUBSCRIPTION = gql`
         username
       }
     }
+  }
+`;
+
+// --- ONBOARDING OPERATIONS ---
+
+export const APP_STATUS_QUERY = gql`
+  query AppStatus {
+    appStatus {
+      hasUsers
+      userCount
+      isOnboardingComplete
+    }
+  }
+`;
+
+export const ADD_ONBOARDING_USER_MUTATION = gql`
+  mutation AddOnboardingUser($username: String!, $password: String!) {
+    addOnboardingUser(username: $username, password: $password) {
+      id
+      username
+    }
+  }
+`;
+
+export const SAVE_ONBOARDING_PREFERENCES_MUTATION = gql`
+  mutation SaveOnboardingPreferences($input: UpdatePreferencesInput!) {
+    saveOnboardingPreferences(input: $input) {
+      countryOrigins
+      genderPreference
+      maxCharacters
+    }
+  }
+`;
+
+export const COMPLETE_ONBOARDING_MUTATION = gql`
+  mutation CompleteOnboarding {
+    completeOnboarding
   }
 `;

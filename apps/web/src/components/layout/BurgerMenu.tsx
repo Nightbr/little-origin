@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Heart, HeartOff, Users, Settings, LogOut, Home } from 'lucide-react';
+import { Menu, X, Heart, HeartOff, Users, Settings, LogOut, Home, UserPlus } from 'lucide-react';
 import { Link, useRouter } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ const menuItems = [
   { label: 'Disliked Names', icon: HeartOff, to: '/dislikes' },
   { label: 'Matches', icon: Users, to: '/matches' },
   { label: 'Preferences', icon: Settings, to: '/preferences' },
+  { label: 'Add User', icon: UserPlus, to: '/add-user' },
 ];
 
 export function BurgerMenu() {

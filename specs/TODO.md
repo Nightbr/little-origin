@@ -4,17 +4,12 @@
 
 ### Onboarding & User Management
 
-- [ ] **Onboarding Rework**: Redirect to `/onboarding` if no users exist in the database.
-- [ ] **Onboarding Step 1**: Interface to add one or more users (partners/family).
-- [ ] **Onboarding Step 2**: Configure global preferences (Gender, Countries, Length).
-- [ ] **Onboarding Step 3**: Trigger initial name seeding into the database.
-- [ ] **Post-Onboarding**: Require login after the onboarding flow is completed.
-- [ ] **Add User Flow**: New page/menu entry for logged users to add more family members.
-
-### Web App Performance & State
-
-- [ ] **No-Cache Preferences**: Ensure Preferences query always hits the network (network-only).
-- [ ] **No-Cache NextName**: Ensure `getNextName` always hits the network to respect latest preference changes.
+- [x] **Onboarding Rework**: Redirect to `/onboarding` if no users exist in the database.
+- [x] **Onboarding Step 1**: Interface to add one or more users (partners/family).
+- [x] **Onboarding Step 2**: Configure global preferences (Gender, Countries, Length).
+- [x] **Onboarding Step 3**: Trigger initial name seeding into the database.
+- [x] **Post-Onboarding**: Require login after the onboarding flow is completed.
+- [x] **Add User Flow**: New page/menu entry for logged users to add more family members.
 
 ### Filtering & Search
 

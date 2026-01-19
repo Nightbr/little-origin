@@ -1,9 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQuery } from '@apollo/client';
 import { LIKED_NAMES_QUERY } from '@/graphql/operations';
 import { Heart } from 'lucide-react';
 
 export const Route = createFileRoute('/likes')({
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: () => (
     <div className='p-8 max-w-4xl mx-auto w-full'>
       <header className='mb-12'>

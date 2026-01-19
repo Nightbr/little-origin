@@ -2,16 +2,17 @@ import { db } from '../db/client';
 import { names, preferences, reviews } from '@little-origin/core';
 import { getNamesByCountries } from '@little-origin/name-data';
 import { eq, notInArray, and, inArray, sql } from 'drizzle-orm';
-import { DEFAULT_PREFERENCES } from '@little-origin/core/src/constants';
+import { DEFAULT_PREFERENCES, SUPPORTED_COUNTRIES } from '@little-origin/core/src/constants';
 
 export class NameService {
   async seedNames(countToSeed = 250) {
-    // Get preferences (singleton)
+    // Get preferences (singleton) - only used for gender/maxCharacters
     const prefsList = await db.select().from(preferences).limit(1);
     const prefs = prefsList[0] || DEFAULT_PREFERENCES;
 
-    // Load static names
-    const staticNames = getNamesByCountries(prefs.countryOrigins, prefs.genderPreference, prefs.maxCharacters);
+    // Load static names for ALL countries, not just user preferences
+    const allCountryCodes = SUPPORTED_COUNTRIES.map((c) => c.code);
+    const staticNames = getNamesByCountries(allCountryCodes, prefs.genderPreference, prefs.maxCharacters);
 
     if (staticNames.length === 0) return { count: 0, source: 'static' };
 

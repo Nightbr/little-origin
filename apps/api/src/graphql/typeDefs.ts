@@ -68,8 +68,24 @@ export const typeDefs = `#graphql
   }
 
   type AuthPayload {
-    token: String!
+    accessToken: String!
     user: User!
+  }
+
+  type RefreshPayload {
+    accessToken: String!
+    user: User!
+  }
+
+  type AppStatus {
+    hasUsers: Boolean!
+    userCount: Int!
+    isOnboardingComplete: Boolean!
+  }
+
+  type OnboardingUser {
+    id: ID!
+    username: String!
   }
 
   type Query {
@@ -79,15 +95,22 @@ export const typeDefs = `#graphql
     dislikedNames: [Name!]!
     allMatches: [Match!]!
     preferences: UserPreferences!
+    appStatus: AppStatus!
   }
 
   type Mutation {
     register(username: String!, password: String!): AuthPayload!
     login(username: String!, password: String!): AuthPayload!
+    logout: Boolean!
+    refreshToken: RefreshPayload!
     seedNames: SeedResult!
     reviewName(nameId: ID!, isLiked: Boolean!): Review!
     undoLastReview: Review
     updatePreferences(input: UpdatePreferencesInput!): UserPreferences!
+    # Onboarding mutations (no auth required)
+    addOnboardingUser(username: String!, password: String!): OnboardingUser!
+    saveOnboardingPreferences(input: UpdatePreferencesInput!): UserPreferences!
+    completeOnboarding: Boolean!
   }
 
   type Subscription {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Link, useRouter } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 
 export function Login() {
   const { login } = useAuth();
@@ -14,16 +14,19 @@ export function Login() {
     try {
       await login(username, password);
       router.navigate({ to: '/' });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
       <div>
-        <label className='block text-sm font-medium mb-2 text-charcoal'>Username</label>
+        <label htmlFor='username' className='block text-sm font-medium mb-2 text-charcoal'>
+          Username
+        </label>
         <input
+          id='username'
           className='w-full p-3 bg-white/50 rounded-xl border border-border focus:ring-2 focus:ring-sage-green focus:outline-none transition-all'
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -31,8 +34,11 @@ export function Login() {
         />
       </div>
       <div>
-        <label className='block text-sm font-medium mb-2 text-charcoal'>Password</label>
+        <label htmlFor='password' className='block text-sm font-medium mb-2 text-charcoal'>
+          Password
+        </label>
         <input
+          id='password'
           type='password'
           className='w-full p-3 bg-white/50 rounded-xl border border-border focus:ring-2 focus:ring-sage-green focus:outline-none transition-all'
           value={password}
@@ -41,15 +47,11 @@ export function Login() {
         />
       </div>
       {error && <p className='text-destructive text-sm'>{error}</p>}
-      <button className='w-full py-3 px-4 bg-primary text-white font-heading font-semibold rounded-xl hover:bg-primary/90 shadow-nurture transition-all transform active:scale-[0.98]'>
+      <button
+        type='submit'
+        className='w-full py-3 px-4 bg-primary text-white font-heading font-semibold rounded-xl hover:bg-primary/90 shadow-nurture transition-all transform active:scale-[0.98]'>
         Sign In
       </button>
-      <div className='text-center text-sm text-muted-foreground'>
-        No account?{' '}
-        <Link to='/register' className='text-primary hover:underline'>
-          Create one
-        </Link>
-      </div>
     </form>
   );
 }

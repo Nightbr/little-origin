@@ -9,22 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegisterRouteImport } from './routes/register'
 import { Route as PreferencesRouteImport } from './routes/preferences'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LikesRouteImport } from './routes/likes'
 import { Route as DislikesRouteImport } from './routes/dislikes'
+import { Route as AddUserRouteImport } from './routes/add-user'
 import { Route as IndexRouteImport } from './routes/index'
 
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PreferencesRoute = PreferencesRouteImport.update({
   id: '/preferences',
   path: '/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesRoute = MatchesRouteImport.update({
@@ -47,6 +48,11 @@ const DislikesRoute = DislikesRouteImport.update({
   path: '/dislikes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AddUserRoute = AddUserRouteImport.update({
+  id: '/add-user',
+  path: '/add-user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,86 +61,93 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/add-user': typeof AddUserRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
-  '/register': typeof RegisterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/add-user': typeof AddUserRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
-  '/register': typeof RegisterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/add-user': typeof AddUserRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
-  '/register': typeof RegisterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/add-user'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/onboarding'
     | '/preferences'
-    | '/register'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/add-user'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/onboarding'
     | '/preferences'
-    | '/register'
   id:
     | '__root__'
     | '/'
+    | '/add-user'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/onboarding'
     | '/preferences'
-    | '/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AddUserRoute: typeof AddUserRoute
   DislikesRoute: typeof DislikesRoute
   LikesRoute: typeof LikesRoute
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRoute
+  OnboardingRoute: typeof OnboardingRoute
   PreferencesRoute: typeof PreferencesRoute
-  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/preferences': {
       id: '/preferences'
       path: '/preferences'
       fullPath: '/preferences'
       preLoaderRoute: typeof PreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches': {
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DislikesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/add-user': {
+      id: '/add-user'
+      path: '/add-user'
+      fullPath: '/add-user'
+      preLoaderRoute: typeof AddUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,12 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AddUserRoute: AddUserRoute,
   DislikesRoute: DislikesRoute,
   LikesRoute: LikesRoute,
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRoute,
+  OnboardingRoute: OnboardingRoute,
   PreferencesRoute: PreferencesRoute,
-  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

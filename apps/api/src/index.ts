@@ -9,12 +9,16 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { db } from './db/client';
+import { runMigrations } from './db/migrate';
 // Schema and Resolvers will be imported here
 import { schema } from './graphql/schema';
 // Forcing reload to pick up new schema fields
 import { getUserFromRequest, getUserFromToken } from './middleware/auth';
 
 async function main() {
+  // Ensure database migrations are applied before starting the server
+  await runMigrations();
+
   const app = express();
   const httpServer = createServer(app);
 

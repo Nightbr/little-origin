@@ -1,13 +1,11 @@
-import { StrictMode } from 'react';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { useAuth } from './hooks/useAuth';
+import type { RouterContext } from './routes/__root';
 
 const router = createRouter({
   routeTree,
-  context: {
-    auth: undefined!, // We'll inject this via provider if needed
-  },
+  context: undefined as unknown as RouterContext,
 });
 
 declare module '@tanstack/react-router' {
@@ -16,8 +14,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+function LoadingScreen() {
+  return (
+    <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-calm-ivory via-background to-blush-pink/20'>
+      <div className='text-center'>
+        <div className='w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4' />
+        <p className='text-muted-foreground'>Loading...</p>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const auth = useAuth();
+
+  // Show loading screen while auth is initializing
+  if (!auth.isInitialized) {
+    return <LoadingScreen />;
+  }
 
   return <RouterProvider router={router} context={{ auth }} />;
 }
