@@ -7,7 +7,7 @@ import { hashPassword } from '../utils/password';
 import { nameService } from './name.service';
 import { preferencesService } from './preferences.service';
 
-export class OnboardingService {
+class OnboardingService {
 	/**
 	 * Check if any users exist in the database
 	 */

@@ -36,6 +36,9 @@ jobs:
       - name: TypeScript check
         run: pnpm turbo run typecheck
 
+      - name: Check unused dependencies
+        run: pnpm run deps:unused
+
   test:
     name: Tests
     runs-on: ubuntu-latest

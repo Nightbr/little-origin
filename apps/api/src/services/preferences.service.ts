@@ -1,7 +1,7 @@
 import { DEFAULT_PREFERENCES, insertPreferencesSchema, preferences } from '@little-origin/core';
 import { db } from '../db/client';
 
-export class PreferencesService {
+class PreferencesService {
 	async getPreferences() {
 		const res = await db.select().from(preferences).limit(1);
 		return res[0] || DEFAULT_PREFERENCES;

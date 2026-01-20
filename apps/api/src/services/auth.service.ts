@@ -6,12 +6,12 @@ import { db } from '../db/client';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
 
-export interface AuthTokens {
+interface AuthTokens {
 	accessToken: string;
 	refreshToken: string;
 }
 
-export class AuthService {
+class AuthService {
 	async register(
 		input: InsertUser,
 	): Promise<{ user: typeof users.$inferSelect; tokens: AuthTokens }> {

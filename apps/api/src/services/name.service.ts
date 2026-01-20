@@ -9,7 +9,7 @@ import { getNamesByCountries } from '@little-origin/name-data';
 import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import { db } from '../db/client';
 
-export class NameService {
+class NameService {
 	private static readonly BATCH_SIZE = 100;
 
 	/**

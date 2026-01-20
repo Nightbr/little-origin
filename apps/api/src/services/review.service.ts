@@ -3,7 +3,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import { matchService } from './match.service';
 
-export class ReviewService {
+class ReviewService {
 	async reviewName(userId: number, nameId: number, isLiked: boolean) {
 		// Upsert review? Or just insert.
 		// Schema has unique constraint on userId, nameId.

@@ -3,7 +3,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 import { db } from '../db/client';
 import { EVENTS, pubsub } from '../pubsub';
 
-export class MatchService {
+class MatchService {
 	private readonly MATCH_THRESHOLD = 2;
 
 	async checkAndCreateMatch(nameId: number): Promise<typeof matches.$inferSelect | null> {

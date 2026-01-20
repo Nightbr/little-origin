@@ -19,11 +19,6 @@ export function generateRefreshToken(userId: number): string {
 	return jwt.sign({ userId, type: 'refresh' }, env.JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
-// Legacy function for backward compatibility
-export function generateToken(userId: number): string {
-	return generateAccessToken(userId);
-}
-
 export function verifyToken(token: string): TokenPayload | null {
 	try {
 		return jwt.verify(token, env.JWT_SECRET) as TokenPayload;

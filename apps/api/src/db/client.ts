@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { env } from '../config/env';
 import { findProjectRoot } from './utils';
 
-export function getDatabasePath(): string {
+function getDatabasePath(): string {
 	// Support in-memory database for tests
 	if (env.DATABASE_URL === ':memory:') {
 		return ':memory:';

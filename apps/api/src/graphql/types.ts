@@ -12,6 +12,3 @@ export interface GraphQLContext {
 	req: Request;
 	db: typeof db;
 }
-
-export type ResolverParent = Record<string, unknown>;
-export type ResolverArgs<T = Record<string, unknown>> = T;

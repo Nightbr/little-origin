@@ -4,10 +4,6 @@ import type { Request } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../utils/jwt';
 
-export interface AuthContext {
-	user: typeof users.$inferSelect | null;
-}
-
 export async function getUserFromToken(token: string): Promise<typeof users.$inferSelect | null> {
 	const payload = verifyToken(token);
 	if (!payload) return null;

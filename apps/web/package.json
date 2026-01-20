@@ -22,11 +22,9 @@
 		"lucide-react": "^0.460.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-swipeable": "^7.0.2",
 		"tailwind-merge": "^2.2.0"
 	},
 	"devDependencies": {
-		"@tanstack/router-cli": "^1.151.6",
 		"@tanstack/router-vite-plugin": "^1.151.6",
 		"@types/react": "^18.3.17",
 		"@types/react-dom": "^18.3.5",
