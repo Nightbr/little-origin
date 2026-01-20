@@ -26,6 +26,7 @@ The Best Way to Choose Your Baby's Name.
 
 ### Prerequisites
 
+- [Node.js](https://nodejs.org/) >= 24 (or use mise to install it)
 - [pnpm](https://pnpm.io/) >= 10
 - [mise](https://mise.jdx.dev/) (recommended)
 
