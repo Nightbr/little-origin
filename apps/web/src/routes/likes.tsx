@@ -1,3 +1,4 @@
+import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
 import { LIKED_NAMES_QUERY } from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
@@ -6,7 +7,7 @@ import { Heart } from 'lucide-react';
 interface NameItem {
 	id: string;
 	name: string;
-	gender: string;
+	gender: Gender;
 	originCountry: string;
 }
 
@@ -58,10 +59,11 @@ function LikesList() {
 					key={name.id}
 					className="p-6 bg-white rounded-2xl border border-border shadow-nurture transition-all hover:scale-[1.02]"
 				>
-					<h3 className="text-2xl font-heading text-charcoal">{name.name}</h3>
-					<p className="text-muted-foreground">
-						{name.gender} • {name.originCountry}
-					</p>
+					<div className="flex items-center justify-between mb-2">
+						<h3 className="text-2xl font-heading text-charcoal">{name.name}</h3>
+						<GenderBadge gender={name.gender} size="md" />
+					</div>
+					<p className="text-muted-foreground text-sm">{name.originCountry}</p>
 				</div>
 			))}
 		</div>

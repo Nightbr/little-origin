@@ -42,6 +42,11 @@
 		--success: 140 22% 64%;
 		--success-foreground: 0 0% 10%;
 
+		/* Gender colors (earthy pastels) */
+		--gender-boy: 201 23% 81%; /* #C2D1D9 - soft slate blue */
+		--gender-girl: 14 43% 83%; /* #E8C9C0 - soft terracotta rose */
+		--gender-foreground: 120 3% 24%; /* Charcoal - same for both, ~6.5:1 contrast ratio */
+
 		--border: 98 15% 80%; /* Sage border */
 		--input: 98 15% 85%;
 		--ring: 15 57% 65%;

@@ -93,6 +93,7 @@ export const typeDefs = `#graphql
     me: User
     allUsers: [User!]!
     nextName: Name
+    nextNames(limit: Int, excludeIds: [ID!]): [Name!]!
     likedNames: [Name!]!
     dislikedNames: [Name!]!
     allMatches: [Match!]!

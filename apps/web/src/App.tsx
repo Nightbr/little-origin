@@ -6,6 +6,7 @@ import type { RouterContext } from './routes/__root';
 const router = createRouter({
 	routeTree,
 	context: undefined as unknown as RouterContext,
+	scrollRestoration: true,
 });
 
 declare module '@tanstack/react-router' {

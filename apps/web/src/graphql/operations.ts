@@ -18,9 +18,9 @@ export const ALL_USERS_QUERY = gql`
   }
 `;
 
-export const NEXT_NAME_QUERY = gql`
-  query NextName {
-    nextName {
+export const NEXT_NAMES_QUERY = gql`
+  query NextNames($limit: Int, $excludeIds: [ID!]) {
+    nextNames(limit: $limit, excludeIds: $excludeIds) {
       id
       name
       gender

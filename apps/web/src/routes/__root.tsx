@@ -1,12 +1,7 @@
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { MatchNotification } from '@/components/match/MatchNotification';
 import { useAuth } from '@/hooks/useAuth';
-import {
-	Outlet,
-	ScrollRestoration,
-	createRootRouteWithContext,
-	useLocation,
-} from '@tanstack/react-router';
+import { Outlet, createRootRouteWithContext, useLocation } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export interface RouterContext {
@@ -29,7 +24,6 @@ function RootComponent() {
 
 	return (
 		<>
-			<ScrollRestoration />
 			<div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
 				{isAuthenticated && !isAuthPage && <GlobalHeader />}
 				<main

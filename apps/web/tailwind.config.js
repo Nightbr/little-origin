@@ -43,6 +43,16 @@ export default {
 				'sage-green': '#A8B8A0',
 				'warm-clay': '#D88C74',
 				charcoal: '#3D403D',
+
+				// Gender colors (earthy pastels)
+				'gender-boy': {
+					DEFAULT: 'hsl(var(--gender-boy))', // #C2D1D9 - soft slate blue
+					foreground: 'hsl(var(--gender-foreground))',
+				},
+				'gender-girl': {
+					DEFAULT: 'hsl(var(--gender-girl))', // #E8C9C0 - soft terracotta rose
+					foreground: 'hsl(var(--gender-foreground))',
+				},
 			},
 			fontFamily: {
 				sans: ['Lato', 'Inter', 'sans-serif'],

@@ -17,7 +17,11 @@ export default defineConfig({
 	server: {
 		port: 3001,
 		proxy: {
-			'/graphql': 'http://localhost:3000',
+			'/graphql': {
+				target: 'http://localhost:3000',
+				changeOrigin: true,
+				ws: true, // Enable WebSocket proxying
+			},
 		},
 	},
 });
