@@ -5,7 +5,7 @@
 
 The Best Way to Choose Your Baby's Name.
 
-[About](#-about) • [Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Architecture](#-architecture)
+[About](#-about) • [Features](#-features) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture)
 
 "A name is the first gift a parent gives a child."
 
@@ -13,15 +13,45 @@ The Best Way to Choose Your Baby's Name.
 
 ## 📖 About
 
-**Little Origin** is a polished, high-performance application designed to help pairs find the perfect name for their baby. Inspired by the convenience of swipe-based interfaces, it simplifies the overwhelming world of baby names into a collaborative and delightful experience.
+**Little Origin** is a polished, high-performance application designed to help couples find the perfect name for their baby. Inspired by the convenience of swipe-based interfaces, it simplifies the overwhelming world of baby names into a collaborative and delightful experience.
 
 ## ✨ Features
 
 - **🎯 Curated Swipe Interface**: High-quality name cards with gesture-driven interactions (Framer Motion).
 - **💓 Real-time Matching**: Instant notifications when you and your partner both "Like" a name.
 - **🌍 Global Name Sourcing**: Integrated static data and API access to names from over 7 countries.
-- **🔄 Smart Undo**: Accidantally disliked a name? One-click undo to bring it back.
-- **🔐 Secure Auth**: Robust authentication system with JWT and Argon2 protection.
+- **🔐 Data Security**: Self-hosted solution with secure authentication (JWT + Argon2).
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [pnpm](https://pnpm.io/) >= 10
+- [mise](https://mise.jdx.dev/) (recommended)
+
+### Installation
+
+1. **Install Dependencies**
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Configure Environment**
+   Create a `.env` file at the root:
+
+   ```env
+   JWT_SECRET=your_very_secret_key_here
+   ```
+
+3. **Start Development**
+
+   ```bash
+   pnpm run dev
+   ```
+
+   - **Web**: http://localhost:5173
+   - **API**: http://localhost:3000/graphql
 
 ## 🛠 Tech Stack
 
@@ -40,51 +70,6 @@ The Best Way to Choose Your Baby's Name.
 - **Logic & Validation**: [Zod](https://zod.dev/)
 - **Linting & Formatting**: [Biome](https://biomejs.dev/)
 - **Dependency Management**: [Syncpack](https://github.com/JamieMason/syncpack) & [Knip](https://knip.dev/)
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [pnpm](https://pnpm.io/) >= 8.0.0
-- [mise](https://mise.jdx.dev/) (recommended)
-
-### Installation
-
-1. **Install Dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-2. **Configure Environment**
-   Create a `.env` file at the root:
-
-   ```env
-   JWT_SECRET=your_very_secret_key_here
-   ```
-
-3. **Initialize Database**
-
-   ```bash
-   cd apps/api
-   pnpm exec drizzle-kit push
-   ```
-
-4. **Seed Initial Names**
-
-   ```bash
-   # From root
-   pnpm --filter @little-origin/api exec tsx src/scripts/seed.ts
-   ```
-
-5. **Start Development**
-
-   ```bash
-   pnpm dev
-   ```
-
-   - **Web**: http://localhost:5173
-   - **API**: http://localhost:3000/graphql
 
 ## 🏗 Architecture
 

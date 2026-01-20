@@ -1,11 +1,25 @@
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 build
 coverage
-.turbo
+
+# Environment variables
 .env
 .env.*.local
-.DS_Store
-*.log
-.data
+
+# Database (keep .data folder with .gitkeep)
+.data/*.db
+.data/*.db-*
+
+# Tooling caches
+.turbo
 .tanstack
+
+# Logs
+*.log
+
+# OS
+.DS_Store
