@@ -1,29 +1,26 @@
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NEXT_NAMES_QUERY, REVIEW_NAME_MUTATION } from '../../graphql/operations';
-import { SwipeCard } from './SwipeCard';
-
-interface Name {
-	id: string;
-	name: string;
-	originCountry: string;
-	gender: 'male' | 'female';
-}
+import { BackgroundCard } from './BackgroundCard';
+import { type NameData, SwipeCard } from './SwipeCard';
 
 const PREFETCH_THRESHOLD = 2;
 const FETCH_BATCH_SIZE = 5;
 
 export function SwipeView() {
-	const [fetchNames, { loading, error }] = useLazyQuery<{ nextNames: Name[] }>(NEXT_NAMES_QUERY, {
-		fetchPolicy: 'network-only',
-	});
+	const [fetchNames, { loading, error }] = useLazyQuery<{ nextNames: NameData[] }>(
+		NEXT_NAMES_QUERY,
+		{
+			fetchPolicy: 'network-only',
+		},
+	);
 	const [reviewName] = useMutation(REVIEW_NAME_MUTATION);
 
 	// Local queue of names - the source of truth for the UI
-	const [nameQueue, setNameQueue] = useState<Name[]>([]);
+	const [nameQueue, setNameQueue] = useState<NameData[]>([]);
 	const [isInitialized, setIsInitialized] = useState(false);
 	const isFetchingRef = useRef(false);
-	const nameQueueRef = useRef<Name[]>([]);
+	const nameQueueRef = useRef<NameData[]>([]);
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -181,14 +178,7 @@ export function SwipeView() {
 						{/* Next card (background) - opacity/scale follow drag progress */}
 						{nextName && (
 							<div className="absolute inset-0 z-0">
-								<SwipeCard
-									name={nextName}
-									onSwipeComplete={() => {
-										/* Background card - no swipe handling */
-									}}
-									isBackground
-									revealProgress={dragProgress}
-								/>
+								<BackgroundCard name={nextName} revealProgress={dragProgress} />
 							</div>
 						)}
 

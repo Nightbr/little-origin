@@ -1,204 +1,138 @@
 import { motion, useAnimation } from 'framer-motion';
-import { Heart, X } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
-import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { type SwipeDirection, useSwipeGesture } from '../../hooks/useSwipeGesture';
 import { cn } from '../../lib/utils';
-import { GenderBadge } from '../ui/GenderBadge';
+import { type NameData, SwipeCardContent } from './SwipeCardContent';
 
-interface Name {
-	id: string;
-	name: string;
-	originCountry: string;
-	gender: 'male' | 'female';
-}
+// Re-export NameData for consumers
+export type { NameData };
 
 interface SwipeCardProps {
-	name: Name;
+	name: NameData;
 	onSwipeComplete: (nameId: string, isLiked: boolean) => void;
 	onDragProgress?: (progress: number) => void;
-	isBackground?: boolean;
-	revealProgress?: number;
 }
 
-const EXIT_DISTANCE = 500;
-const EXIT_ROTATION = 30;
+const SWIPE_THRESHOLD = 100;
 
-export function SwipeCard({
-	name,
-	onSwipeComplete,
-	onDragProgress,
-	isBackground = false,
-	revealProgress = 0,
-}: SwipeCardProps) {
+/**
+ * Interactive swipe card component.
+ * Handles drag gestures and button clicks to trigger like/dislike actions.
+ *
+ * Key design decisions:
+ * 1. Uses a state machine in useSwipeGesture to prevent stuck states
+ * 2. Captures the name ID at the moment of swipe initiation (not at animation end)
+ * 3. Uses framer-motion's useAnimation for controlled exit animations
+ * 4. Reports drag progress to parent for background card reveal effect
+ */
+export function SwipeCard({ name, onSwipeComplete, onDragProgress }: SwipeCardProps) {
 	const controls = useAnimation();
-	const SWIPE_THRESHOLD = 100;
 
-	// Store the ID that was swiped - captured at the moment the swipe is triggered (not updated on re-renders)
-	const swipedNameIdRef = useRef<string | null>(null);
+	// Capture the name ID at swipe initiation to avoid stale closure issues
+	const capturedNameIdRef = useRef<string | null>(null);
 
-	const {
-		handlers,
-		offset,
-		isDragging,
-		isExiting,
-		exitDirection,
-		onExitComplete,
-		triggerSwipe: baseTriggerSwipe,
-	} = useSwipeGesture({
+	const { handlers, offset, isDragging, isExiting, exitDirection, triggerSwipe } = useSwipeGesture({
 		threshold: SWIPE_THRESHOLD,
 	});
-
-	// Wrap triggerSwipe to capture the name ID at the moment of swipe
-	const triggerSwipe = useCallback(
-		(direction: 'left' | 'right') => {
-			// Capture the ID NOW, before any state changes or re-renders
-			swipedNameIdRef.current = name.id;
-			console.log(
-				`[SwipeCard ${name.name}] triggerSwipe: Capturing nameId=${name.id} for direction=${direction}`,
-			);
-			baseTriggerSwipe(direction);
-		},
-		[baseTriggerSwipe, name.id, name.name],
-	);
-
-	// Log every render with current state
-	console.log(
-		`[SwipeCard ${name.name}] Render: isExiting=${isExiting}, exitDirection=${exitDirection}, isBackground=${isBackground}, nameId=${name.id}`,
-	);
 
 	// Calculate drag progress (0 to 1) and report to parent
 	const dragProgress = Math.min(1, Math.abs(offset.x) / SWIPE_THRESHOLD);
 
 	useEffect(() => {
-		if (onDragProgress) {
-			onDragProgress(isExiting ? 1 : dragProgress);
-		}
+		onDragProgress?.(isExiting ? 1 : dragProgress);
 	}, [dragProgress, isExiting, onDragProgress]);
 
-	// Track if exit animation has already been triggered for this card
-	const hasStartedExitRef = useRef(false);
+	/**
+	 * Handle button click to trigger swipe.
+	 * Captures the name ID before triggering to ensure correct ID is used.
+	 */
+	const handleButtonSwipe = useCallback(
+		(direction: SwipeDirection) => {
+			// Capture the ID NOW before any state changes
+			capturedNameIdRef.current = name.id;
+			const success = triggerSwipe(direction);
 
-	// Handle exit animation
-	useEffect(() => {
-		console.log(
-			`[SwipeCard ${name.name}] Exit effect check: isExiting=${isExiting}, exitDirection=${exitDirection}, hasStarted=${hasStartedExitRef.current}`,
-		);
-
-		if (isExiting && exitDirection && !hasStartedExitRef.current) {
-			hasStartedExitRef.current = true;
-			// If swipedNameIdRef wasn't set (drag gesture), capture the ID now before animation starts
-			if (!swipedNameIdRef.current) {
-				swipedNameIdRef.current = name.id;
-				console.log(
-					`[SwipeCard ${name.name}] Drag gesture: Capturing nameId=${name.id} at animation start`,
-				);
+			// If trigger failed (e.g., already exiting), reset the captured ID
+			if (!success) {
+				capturedNameIdRef.current = null;
 			}
-			console.log(
-				`[SwipeCard ${name.name}] Starting exit animation to ${exitDirection}, swipedNameId=${swipedNameIdRef.current}`,
-			);
 
-			const exitX = exitDirection === 'right' ? EXIT_DISTANCE : -EXIT_DISTANCE;
-			const exitRotate = exitDirection === 'right' ? EXIT_ROTATION : -EXIT_ROTATION;
+			// eslint-disable-next-line no-console
+			console.log('[SwipeCard] handleButtonSwipe', {
+				nameId: name.id,
+				name: name.name,
+				requestedDirection: direction,
+				success,
+			});
+		},
+		[name.id, name.name, triggerSwipe],
+	);
 
-			// Capture the swiped name ID in a local variable for the animation callback
-			const capturedNameId = swipedNameIdRef.current;
-
-			controls
-				.start({
-					x: exitX,
-					y: 50,
-					rotate: exitRotate,
-					opacity: 0,
-					transition: {
-						type: 'spring',
-						stiffness: 200,
-						damping: 25,
-						opacity: { duration: 0.3, delay: 0.1 },
-					},
-				})
-				.then(() => {
-					// Get the direction from onExitComplete (resets internal state and returns direction)
-					const direction = onExitComplete();
-					// Use the CAPTURED name ID (from when the swipe was initiated)
-					const isLiked = direction === 'right';
-
-					console.log(
-						`[SwipeCard ${name.name}] Exit animation completed, direction=${direction}, capturedNameId=${capturedNameId}, isLiked=${isLiked}`,
-					);
-
-					if (direction && capturedNameId) {
-						onSwipeComplete(capturedNameId, isLiked);
-					} else {
-						console.error(
-							`[SwipeCard ${name.name}] Missing data! direction=${direction}, capturedNameId=${capturedNameId}`,
-						);
-					}
-				})
-				.catch((err) => {
-					console.error(`[SwipeCard ${name.name}] Exit animation error:`, err);
-				});
+	/**
+	 * Handle exit animation when isExiting becomes true.
+	 * Business logic (queue update + mutation) is triggered immediately,
+	 * and the visual exit is now just a quick fade-out from the current position
+	 * (no long swipe from the original center position).
+	 */
+	useEffect(() => {
+		if (!isExiting || !exitDirection) {
+			return;
 		}
-	}, [isExiting, exitDirection, controls, onExitComplete, onSwipeComplete, name.name, name.id]);
+
+		// For drag gestures, capture the ID now if not already captured
+		if (!capturedNameIdRef.current) {
+			capturedNameIdRef.current = name.id;
+		}
+
+		const currentCapturedId = capturedNameIdRef.current;
+		const startX = offset.x;
+		const startY = offset.y;
+		const startRotate = offset.x / 20;
+		const isLiked = exitDirection === 'right';
+
+		// eslint-disable-next-line no-console
+		console.log('[SwipeCard] Detected exiting state', {
+			nameId: currentCapturedId,
+			name: name.name,
+			exitDirection,
+			isLiked,
+		});
+
+		if (currentCapturedId) {
+			// Immediately notify parent about the swipe result so business logic
+			// (queue update + mutation) is decoupled from the exit animation.
+			onSwipeComplete(currentCapturedId, isLiked);
+		}
+
+		// Start from the current dragged position/rotation and fade out quickly
+		controls.set({
+			x: startX,
+			y: startY,
+			rotate: startRotate,
+			opacity: 1,
+		});
+
+		controls
+			.start({
+				x: startX,
+				y: startY,
+				rotate: startRotate,
+				opacity: 0,
+				transition: {
+					duration: 0.15,
+				},
+			})
+			.catch((error) => {
+				// eslint-disable-next-line no-console
+				console.error('[SwipeCard] Exit animation error', error);
+			});
+	}, [isExiting, exitDirection, controls, onSwipeComplete, name.id, name.name, offset.x, offset.y]);
 
 	const rotation = offset.x / 20;
 	const rightOpacity = Math.max(0, Math.min(1, offset.x / 100));
 	const leftOpacity = Math.max(0, Math.min(1, -offset.x / 100));
 
 	const isBoy = name.gender === 'male';
-
-	// Background card styling - opacity and scale follow the swipe progress
-	if (isBackground) {
-		// Interpolate from background state (0.7 opacity, 0.95 scale) to foreground state (1.0 opacity, 1.0 scale)
-		const baseOpacity = 0.7;
-		const baseScale = 0.95;
-		const baseY = 20;
-
-		const currentOpacity = baseOpacity + revealProgress * (1 - baseOpacity);
-		const currentScale = baseScale + revealProgress * (1 - baseScale);
-		const currentY = baseY - revealProgress * baseY;
-
-		return (
-			<motion.div
-				className={cn(
-					'w-full h-full bg-card rounded-[2.5rem] border-b-4 overflow-hidden absolute flex flex-col shadow-nurture',
-					isBoy ? 'border-b-gender-boy/50' : 'border-b-gender-girl/50',
-				)}
-				style={{
-					opacity: currentOpacity,
-					scale: currentScale,
-					y: currentY,
-				}}
-			>
-				{/* Background Subtle Gradient */}
-				<div
-					className={cn(
-						'absolute inset-0 opacity-[0.05] pointer-events-none',
-						isBoy
-							? 'bg-gradient-to-br from-gender-boy to-transparent'
-							: 'bg-gradient-to-br from-gender-girl to-transparent',
-					)}
-				/>
-
-				<div className="flex-1 flex flex-col items-center justify-center p-8 z-20">
-					<GenderBadge gender={name.gender} size="lg" className="mb-6" />
-
-					<h1 className="text-6xl font-heading text-charcoal mb-2 text-center tracking-tight">
-						{name.name}
-					</h1>
-
-					<div className="mt-12 text-muted-foreground/40 text-sm font-medium tracking-widest uppercase">
-						{name.originCountry}
-					</div>
-				</div>
-
-				{/* Placeholder for action buttons - same height as foreground card buttons */}
-				<div className="p-8 pt-0 flex justify-center gap-6 z-30">
-					<div className="w-16 h-16" />
-					<div className="w-16 h-16" />
-				</div>
-			</motion.div>
-		);
-	}
 
 	return (
 		<motion.div
@@ -221,77 +155,22 @@ export function SwipeCard({
 						}
 			}
 			initial={{ scale: 1, opacity: 1 }}
-			transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+			transition={
+				// Use quick transitions when interacting, spring only for scale feedback
+				isDragging ? { type: 'spring', stiffness: 400, damping: 30 } : { duration: 0.1 }
+			}
 		>
-			{/* Dislike Overlay */}
-			<div
-				className="absolute inset-0 bg-destructive/10 flex items-center justify-center pointer-events-none z-10"
-				style={{ opacity: isExiting && exitDirection === 'left' ? 1 : leftOpacity }}
-			>
-				<X size={120} className="text-destructive drop-shadow-lg opacity-50" />
-			</div>
-
-			{/* Like Overlay */}
-			<div
-				className="absolute inset-0 bg-warm-clay/10 flex items-center justify-center pointer-events-none z-10"
-				style={{ opacity: isExiting && exitDirection === 'right' ? 1 : rightOpacity }}
-			>
-				<Heart size={120} className="text-warm-clay fill-warm-clay/50 drop-shadow-md opacity-50" />
-			</div>
-
-			{/* Background Subtle Gradient */}
-			<div
-				className={cn(
-					'absolute inset-0 opacity-[0.05] pointer-events-none',
-					isBoy
-						? 'bg-gradient-to-br from-gender-boy to-transparent'
-						: 'bg-gradient-to-br from-gender-girl to-transparent',
-				)}
+			<SwipeCardContent
+				name={name}
+				showOverlays
+				dislikeOpacity={leftOpacity}
+				likeOpacity={rightOpacity}
+				exitDirection={exitDirection}
+				showButtons
+				buttonsDisabled={isExiting}
+				onDislike={() => handleButtonSwipe('left')}
+				onLike={() => handleButtonSwipe('right')}
 			/>
-
-			<div className="flex-1 flex flex-col items-center justify-center p-8 z-20">
-				<GenderBadge gender={name.gender} size="lg" className="mb-6" />
-
-				<h1 className="text-6xl font-heading text-charcoal mb-2 text-center tracking-tight">
-					{name.name}
-				</h1>
-
-				<div className="mt-12 text-muted-foreground/40 text-sm font-medium tracking-widest uppercase">
-					{name.originCountry}
-				</div>
-			</div>
-
-			{/* Action Buttons */}
-			<div className="p-8 pt-0 flex justify-center gap-6 z-30">
-				<button
-					type="button"
-					disabled={isExiting}
-					onMouseDown={(e) => e.stopPropagation()}
-					onTouchStart={(e) => e.stopPropagation()}
-					onClick={(e) => {
-						e.stopPropagation();
-						triggerSwipe('left');
-					}}
-					className="w-16 h-16 rounded-full bg-white shadow-nurture border border-sage-green/10 flex items-center justify-center text-sage-green hover:bg-sage-green hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-					aria-label="Dislike"
-				>
-					<X size={32} />
-				</button>
-				<button
-					type="button"
-					disabled={isExiting}
-					onMouseDown={(e) => e.stopPropagation()}
-					onTouchStart={(e) => e.stopPropagation()}
-					onClick={(e) => {
-						e.stopPropagation();
-						triggerSwipe('right');
-					}}
-					className="w-16 h-16 rounded-full bg-white shadow-nurture border border-warm-clay/10 flex items-center justify-center text-warm-clay hover:bg-warm-clay hover:text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-					aria-label="Like"
-				>
-					<Heart size={32} className="fill-current" />
-				</button>
-			</div>
 		</motion.div>
 	);
 }

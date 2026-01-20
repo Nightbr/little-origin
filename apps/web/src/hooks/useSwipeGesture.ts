@@ -1,116 +1,280 @@
 import { useCallback, useRef, useState } from 'react';
 
-type ExitDirection = 'left' | 'right' | null;
+/**
+ * Swipe direction: 'left' for dislike, 'right' for like
+ */
+export type SwipeDirection = 'left' | 'right';
+
+/**
+ * The possible states of the swipe gesture state machine.
+ * Using a state machine prevents invalid state combinations that can cause stuck cards.
+ */
+export const SwipeState = {
+	/** Card is idle and waiting for interaction */
+	idle: 'idle',
+	/** User is actively dragging the card */
+	dragging: 'dragging',
+	/** Card is animating out after a successful swipe */
+	exiting: 'exiting',
+} as const;
+
+export type SwipeState = (typeof SwipeState)[keyof typeof SwipeState];
 
 interface SwipeGestureOptions {
 	threshold?: number;
 }
 
-interface SwipeGestureResult {
-	handlers: {
-		onMouseDown: (e: React.MouseEvent) => void;
-		onMouseMove: (e: React.MouseEvent) => void;
-		onMouseUp: () => void;
-		onMouseLeave: () => void;
-		onTouchStart: (e: React.TouchEvent) => void;
-		onTouchMove: (e: React.TouchEvent) => void;
-		onTouchEnd: () => void;
-	};
+export interface SwipeGestureState {
+	/** Current state of the swipe gesture */
+	state: SwipeState;
+	/** Current drag offset */
 	offset: { x: number; y: number };
+	/** Direction the card is exiting (only set when state is 'exiting') */
+	exitDirection: SwipeDirection | null;
+}
+
+export interface SwipeGestureHandlers {
+	onMouseDown: (e: React.MouseEvent) => void;
+	onMouseMove: (e: React.MouseEvent) => void;
+	onMouseUp: () => void;
+	onMouseLeave: () => void;
+	onTouchStart: (e: React.TouchEvent) => void;
+	onTouchMove: (e: React.TouchEvent) => void;
+	onTouchEnd: () => void;
+}
+
+export interface SwipeGestureResult {
+	handlers: SwipeGestureHandlers;
+	/** Current gesture state */
+	gestureState: SwipeGestureState;
+	/** Convenience getters for common checks */
 	isDragging: boolean;
 	isExiting: boolean;
-	exitDirection: ExitDirection;
+	offset: { x: number; y: number };
+	exitDirection: SwipeDirection | null;
 	/** Call this when the exit animation completes. Returns the direction that was swiped. */
-	onExitComplete: () => ExitDirection;
-	/** Trigger a programmatic swipe (e.g., from button click) */
-	triggerSwipe: (direction: 'left' | 'right') => void;
+	onExitComplete: () => SwipeDirection | null;
+	/** Trigger a programmatic swipe (e.g., from button click). Returns true if swipe was triggered. */
+	triggerSwipe: (direction: SwipeDirection) => boolean;
+	/** Reset the gesture to idle state (e.g., for recovering from stuck states) */
+	reset: () => void;
 }
 
 /**
- * Hook for handling swipe gestures.
+ * Hook for handling swipe gestures using a state machine pattern.
  *
- * IMPORTANT: This hook no longer takes callbacks. Instead, it returns the exit direction
- * from onExitComplete, and the caller is responsible for handling the swipe action.
- * This avoids stale closure issues where the wrong ID could be captured.
+ * The state machine ensures we can never have invalid state combinations:
+ * - idle: offset is {0,0}, exitDirection is null
+ * - dragging: offset reflects current drag, exitDirection is null
+ * - exiting: offset is frozen at swipe point, exitDirection is set
+ *
+ * Transitions:
+ * - idle -> dragging: on pointer down
+ * - dragging -> idle: on pointer up without threshold
+ * - dragging -> exiting: on pointer up with threshold exceeded
+ * - idle -> exiting: on programmatic triggerSwipe
+ * - exiting -> idle: on onExitComplete
  */
 export function useSwipeGesture({ threshold = 100 }: SwipeGestureOptions = {}): SwipeGestureResult {
-	const [isDragging, setIsDragging] = useState(false);
-	const [offset, setOffset] = useState({ x: 0, y: 0 });
-	const [isExiting, setIsExiting] = useState(false);
-	const [exitDirection, setExitDirection] = useState<ExitDirection>(null);
-	const startPos = useRef({ x: 0, y: 0 });
-	const isExitingRef = useRef(false);
-	const exitDirectionRef = useRef<ExitDirection>(null);
+	// Combined state to ensure atomic updates
+	const [gestureState, setGestureState] = useState<SwipeGestureState>({
+		state: SwipeState.idle,
+		offset: { x: 0, y: 0 },
+		exitDirection: null,
+	});
 
-	// Keep refs in sync
-	isExitingRef.current = isExiting;
-	exitDirectionRef.current = exitDirection;
+	// Refs for synchronous access during event handlers
+	// These are updated BEFORE setState to ensure synchronous checks are accurate
+	const stateRef = useRef<SwipeState>(SwipeState.idle);
+	const startPosRef = useRef({ x: 0, y: 0 });
+	const currentOffsetRef = useRef({ x: 0, y: 0 });
+	const exitDirectionRef = useRef<SwipeDirection | null>(null);
 
-	const handleStart = (clientX: number, clientY: number) => {
-		if (isExitingRef.current) return;
-		setIsDragging(true);
-		startPos.current = { x: clientX, y: clientY };
-	};
+	/**
+	 * Transition to dragging state when user starts interaction
+	 */
+	const handleStart = useCallback((clientX: number, clientY: number) => {
+		// Can only start dragging from idle state
+		if (stateRef.current !== SwipeState.idle) {
+			return;
+		}
 
-	const handleMove = (clientX: number, clientY: number) => {
-		if (!isDragging || isExitingRef.current) return;
-		const deltaX = clientX - startPos.current.x;
-		const deltaY = clientY - startPos.current.y;
-		setOffset({ x: deltaX, y: deltaY });
-	};
+		// Update ref BEFORE setState for synchronous access
+		stateRef.current = SwipeState.dragging;
+		startPosRef.current = { x: clientX, y: clientY };
+		currentOffsetRef.current = { x: 0, y: 0 };
 
-	const handleEnd = () => {
-		if (!isDragging || isExitingRef.current) return;
-		setIsDragging(false);
+		// Helpful debugging for stuck cards: log state transitions
+		// eslint-disable-next-line no-console
+		console.log('[useSwipeGesture] handleStart -> dragging', {
+			clientX,
+			clientY,
+		});
+
+		setGestureState({
+			state: SwipeState.dragging,
+			offset: { x: 0, y: 0 },
+			exitDirection: null,
+		});
+	}, []);
+
+	/**
+	 * Update offset during drag
+	 */
+	const handleMove = useCallback((clientX: number, clientY: number) => {
+		// Can only move while dragging
+		if (stateRef.current !== SwipeState.dragging) {
+			return;
+		}
+
+		const deltaX = clientX - startPosRef.current.x;
+		const deltaY = clientY - startPosRef.current.y;
+
+		// Update ref BEFORE setState for synchronous access
+		currentOffsetRef.current = { x: deltaX, y: deltaY };
+
+		setGestureState({
+			state: SwipeState.dragging,
+			offset: { x: deltaX, y: deltaY },
+			exitDirection: null,
+		});
+	}, []);
+
+	/**
+	 * Handle end of drag - either return to idle or transition to exiting
+	 */
+	const handleEnd = useCallback(() => {
+		// Can only end while dragging
+		if (stateRef.current !== SwipeState.dragging) {
+			return;
+		}
+
+		const offset = currentOffsetRef.current;
 
 		if (Math.abs(offset.x) > threshold) {
-			const direction = offset.x > 0 ? 'right' : 'left';
-			setExitDirection(direction);
-			setIsExiting(true);
-			isExitingRef.current = true;
+			// Threshold exceeded - transition to exiting
+			const direction: SwipeDirection = offset.x > 0 ? 'right' : 'left';
+
+			// Update refs BEFORE setState for synchronous access
+			stateRef.current = SwipeState.exiting;
+			exitDirectionRef.current = direction;
+
+			// eslint-disable-next-line no-console
+			console.log('[useSwipeGesture] handleEnd -> exiting', {
+				offset,
+				direction,
+				threshold,
+			});
+
+			setGestureState({
+				state: SwipeState.exiting,
+				offset, // Keep the offset where it was for smooth animation
+				exitDirection: direction,
+			});
 		} else {
-			setOffset({ x: 0, y: 0 });
+			// Threshold not met - return to idle
+			// Update refs BEFORE setState for synchronous access
+			stateRef.current = SwipeState.idle;
+			currentOffsetRef.current = { x: 0, y: 0 };
+
+			// eslint-disable-next-line no-console
+			console.log('[useSwipeGesture] handleEnd -> idle (below threshold)', {
+				offset,
+				threshold,
+			});
+
+			setGestureState({
+				state: SwipeState.idle,
+				offset: { x: 0, y: 0 },
+				exitDirection: null,
+			});
 		}
-	};
+	}, [threshold]);
 
-	// Called when exit animation completes
-	// Returns the direction so the caller can handle the action with current data (avoiding stale closures)
-	const onExitComplete = useCallback((): ExitDirection => {
+	/**
+	 * Called when exit animation completes.
+	 * Returns the direction so the caller can handle the swipe action.
+	 */
+	const onExitComplete = useCallback((): SwipeDirection | null => {
 		const direction = exitDirectionRef.current;
-		console.log('[useSwipeGesture] onExitComplete called, direction:', direction);
 
-		// Reset state
-		setIsExiting(false);
-		setExitDirection(null);
-		setOffset({ x: 0, y: 0 });
-		isExitingRef.current = false;
+		// eslint-disable-next-line no-console
+		console.log('[useSwipeGesture] onExitComplete -> idle', {
+			previousDirection: direction,
+		});
+
+		// Update refs BEFORE setState for synchronous access
+		stateRef.current = SwipeState.idle;
+		currentOffsetRef.current = { x: 0, y: 0 };
 		exitDirectionRef.current = null;
 
-		// Return the direction so caller can handle the swipe action
+		// Transition back to idle
+		setGestureState({
+			state: SwipeState.idle,
+			offset: { x: 0, y: 0 },
+			exitDirection: null,
+		});
+
 		return direction;
 	}, []);
 
-	// Programmatic swipe (for button clicks)
-	const triggerSwipe = useCallback((direction: 'left' | 'right') => {
-		console.log(
-			`[useSwipeGesture] triggerSwipe called: direction=${direction}, isExitingRef=${isExitingRef.current}`,
-		);
-		if (isExitingRef.current) {
-			console.log('[useSwipeGesture] triggerSwipe blocked - already exiting');
-			return;
+	/**
+	 * Trigger a programmatic swipe (e.g., from button click).
+	 * Returns true if the swipe was triggered, false if blocked.
+	 */
+	const triggerSwipe = useCallback((direction: SwipeDirection): boolean => {
+		// Can only trigger from idle state
+		if (stateRef.current !== SwipeState.idle) {
+			// eslint-disable-next-line no-console
+			console.log('[useSwipeGesture] triggerSwipe blocked (not idle)', {
+				currentState: stateRef.current,
+				requestedDirection: direction,
+			});
+			return false;
 		}
-		// Cancel any ongoing drag
-		setIsDragging(false);
-		setOffset({ x: 0, y: 0 });
-		// Trigger exit animation - use functional updates to ensure state changes
-		console.log(`[useSwipeGesture] Setting exitDirection to ${direction} and isExiting to true`);
-		setExitDirection(direction);
-		setIsExiting(true);
-		isExitingRef.current = true;
-		console.log('[useSwipeGesture] State updates dispatched');
+
+		// Update refs BEFORE setState for synchronous access
+		stateRef.current = SwipeState.exiting;
+		exitDirectionRef.current = direction;
+
+		// eslint-disable-next-line no-console
+		console.log('[useSwipeGesture] triggerSwipe -> exiting', {
+			direction,
+		});
+
+		setGestureState({
+			state: SwipeState.exiting,
+			offset: { x: 0, y: 0 },
+			exitDirection: direction,
+		});
+
+		return true;
 	}, []);
 
-	const handlers = {
+	/**
+	 * Force reset to idle state (recovery mechanism for stuck cards)
+	 */
+	const reset = useCallback(() => {
+		// eslint-disable-next-line no-console
+		console.log('[useSwipeGesture] reset -> idle', {
+			previousState: stateRef.current,
+			previousOffset: currentOffsetRef.current,
+			previousExitDirection: exitDirectionRef.current,
+		});
+
+		// Update refs BEFORE setState for synchronous access
+		stateRef.current = SwipeState.idle;
+		currentOffsetRef.current = { x: 0, y: 0 };
+		exitDirectionRef.current = null;
+
+		setGestureState({
+			state: SwipeState.idle,
+			offset: { x: 0, y: 0 },
+			exitDirection: null,
+		});
+	}, []);
+
+	const handlers: SwipeGestureHandlers = {
 		onMouseDown: (e: React.MouseEvent) => handleStart(e.clientX, e.clientY),
 		onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX, e.clientY),
 		onMouseUp: handleEnd,
@@ -122,11 +286,14 @@ export function useSwipeGesture({ threshold = 100 }: SwipeGestureOptions = {}): 
 
 	return {
 		handlers,
-		offset,
-		isDragging,
-		isExiting,
-		exitDirection,
+		gestureState,
+		// Convenience getters
+		isDragging: gestureState.state === SwipeState.dragging,
+		isExiting: gestureState.state === SwipeState.exiting,
+		offset: gestureState.offset,
+		exitDirection: gestureState.exitDirection,
 		onExitComplete,
 		triggerSwipe,
+		reset,
 	};
 }
