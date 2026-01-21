@@ -18,6 +18,7 @@ interface Preferences {
 	countryOrigins: string[];
 	genderPreference: 'male' | 'female' | 'both';
 	maxCharacters: number;
+	familyName: string;
 }
 
 export function OnboardingWizard() {
@@ -28,6 +29,7 @@ export function OnboardingWizard() {
 		countryOrigins: ['US'],
 		genderPreference: 'both',
 		maxCharacters: 12,
+		familyName: '',
 	});
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);

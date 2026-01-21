@@ -23,6 +23,7 @@ mutation SaveOnboardingPreferences($input: UpdatePreferencesInput!) {
     countryOrigins
     genderPreference
     maxCharacters
+    familyName
   }
 }`;
 
@@ -80,5 +81,25 @@ mutation SeedNames {
     count
     total
     source
+  }
+}`;
+
+export const PREFERENCES_QUERY = `#graphql
+query GetPreferences {
+  preferences {
+    countryOrigins
+    genderPreference
+    maxCharacters
+    familyName
+  }
+}`;
+
+export const UPDATE_PREFERENCES_MUTATION = `#graphql
+mutation UpdatePreferences($input: UpdatePreferencesInput!) {
+  updatePreferences(input: $input) {
+    countryOrigins
+    genderPreference
+    maxCharacters
+    familyName
   }
 }`;

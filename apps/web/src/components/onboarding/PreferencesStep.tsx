@@ -4,6 +4,7 @@ interface Preferences {
 	countryOrigins: string[];
 	genderPreference: 'male' | 'female' | 'both';
 	maxCharacters: number;
+	familyName: string;
 }
 
 interface PreferencesStepProps {
@@ -86,6 +87,21 @@ export function PreferencesStep({ preferences, onPreferencesChange }: Preference
 					}
 					className="w-full h-2 bg-secondary/30 rounded-lg appearance-none cursor-pointer accent-primary"
 				/>
+			</section>
+
+			{/* Family Name */}
+			<section>
+				<h3 className="text-lg font-bold text-charcoal mb-4">Family Name</h3>
+				<input
+					type="text"
+					value={preferences.familyName}
+					onChange={(e) => onPreferencesChange({ ...preferences, familyName: e.target.value })}
+					placeholder="Enter your family name (optional)"
+					className="w-full p-3 bg-white/50 rounded-xl border border-border focus:ring-2 focus:ring-sage-green focus:border-transparent"
+				/>
+				<p className="text-xs text-muted-foreground mt-2">
+					Will be displayed below names on cards and in lists
+				</p>
 			</section>
 		</div>
 	);

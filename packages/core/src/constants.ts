@@ -18,4 +18,5 @@ export const DEFAULT_PREFERENCES = {
 	countryOrigins: ['US'] as string[],
 	genderPreference: 'both' as const,
 	maxCharacters: 20,
+	familyName: '',
 };

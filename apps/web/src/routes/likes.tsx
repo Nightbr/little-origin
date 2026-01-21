@@ -1,5 +1,5 @@
 import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
-import { LIKED_NAMES_QUERY } from '@/graphql/operations';
+import { GET_PREFERENCES_QUERY, LIKED_NAMES_QUERY } from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { Heart } from 'lucide-react';
@@ -30,6 +30,8 @@ export const Route = createFileRoute('/likes')({
 
 function LikesList() {
 	const { data, loading, error } = useQuery(LIKED_NAMES_QUERY, { fetchPolicy: 'network-only' });
+	const { data: prefsData } = useQuery(GET_PREFERENCES_QUERY);
+	const familyName = prefsData?.preferences?.familyName || '';
 
 	if (loading)
 		return (
@@ -60,7 +62,10 @@ function LikesList() {
 					className="p-6 bg-white rounded-2xl border border-border shadow-nurture transition-all hover:scale-[1.02]"
 				>
 					<div className="flex items-center justify-between mb-2">
-						<h3 className="text-2xl font-heading text-charcoal">{name.name}</h3>
+						<h3 className="text-2xl font-heading text-charcoal">
+							{name.name}
+							{familyName && <span className="text-charcoal/70"> {familyName}</span>}
+						</h3>
 						<GenderBadge gender={name.gender} size="md" />
 					</div>
 					<p className="text-muted-foreground text-sm">{name.originCountry}</p>

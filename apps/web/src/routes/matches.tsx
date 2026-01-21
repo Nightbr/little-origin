@@ -1,8 +1,12 @@
 import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
-import { ALL_MATCHES_QUERY, MATCH_CREATED_SUBSCRIPTION } from '@/graphql/operations';
+import {
+	ALL_MATCHES_QUERY,
+	GET_PREFERENCES_QUERY,
+	MATCH_CREATED_SUBSCRIPTION,
+} from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { PartyPopper, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface MatchUser {
@@ -42,6 +46,8 @@ function MatchesList() {
 	const { data, loading, error, subscribeToMore } = useQuery(ALL_MATCHES_QUERY, {
 		fetchPolicy: 'network-only',
 	});
+	const { data: prefsData } = useQuery(GET_PREFERENCES_QUERY);
+	const familyName = prefsData?.preferences?.familyName || '';
 
 	useEffect(() => {
 		const unsubscribe = subscribeToMore({
@@ -88,18 +94,18 @@ function MatchesList() {
 			{matches.map((match: MatchItem) => (
 				<div
 					key={match.id}
-					className="p-8 bg-white rounded-3xl border border-border shadow-nurture-lg relative overflow-hidden group"
+					className="p-6 bg-white rounded-3xl border border-border shadow-nurture-lg relative overflow-hidden group"
 				>
-					<div className="absolute top-0 right-0 p-4">
-						<PartyPopper className="text-primary/20 group-hover:scale-125 transition-transform" />
-					</div>
 					<div className="flex flex-col gap-4">
-						<div className="flex items-start justify-between">
-							<h3 className="text-4xl font-heading text-primary">{match.name.name}</h3>
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<h3 className="text-3xl font-heading text-primary">{match.name.name}</h3>
+								{familyName && <span className="text-2xl text-primary/70">{familyName}</span>}
+							</div>
 							<GenderBadge gender={match.name.gender} size="md" />
 						</div>
 
-						<div className="flex flex-wrap items-center gap-2 mt-2">
+						<div className="flex flex-wrap items-center gap-2">
 							<span className="text-sm font-bold text-charcoal/40 mr-2">LIKED BY:</span>
 							{match.likedBy.map((user: MatchUser) => (
 								<span

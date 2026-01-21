@@ -4,6 +4,7 @@ import { type NameData, SwipeCardContent } from './SwipeCardContent';
 
 interface BackgroundCardProps {
 	name: NameData;
+	familyName?: string;
 	/** Progress of the foreground card's swipe (0-1), used to reveal this card */
 	revealProgress?: number;
 }
@@ -12,7 +13,7 @@ interface BackgroundCardProps {
  * Background card that appears behind the active swipe card.
  * Animates opacity and scale based on the foreground card's swipe progress.
  */
-export function BackgroundCard({ name, revealProgress = 0 }: BackgroundCardProps) {
+export function BackgroundCard({ name, familyName, revealProgress = 0 }: BackgroundCardProps) {
 	const isBoy = name.gender === 'male';
 
 	// Interpolate from background state to foreground state
@@ -36,7 +37,12 @@ export function BackgroundCard({ name, revealProgress = 0 }: BackgroundCardProps
 				y: currentY,
 			}}
 		>
-			<SwipeCardContent name={name} showOverlays={false} showButtons={false} />
+			<SwipeCardContent
+				name={name}
+				familyName={familyName}
+				showOverlays={false}
+				showButtons={false}
+			/>
 		</motion.div>
 	);
 }

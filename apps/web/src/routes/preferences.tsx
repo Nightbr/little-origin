@@ -9,6 +9,7 @@ interface PreferencesFormData {
 	countryOrigins: string[];
 	genderPreference: string;
 	maxCharacters: number;
+	familyName: string;
 }
 
 export const Route = createFileRoute('/preferences')({
@@ -36,6 +37,7 @@ function PreferencesView() {
 				countryOrigins: data.preferences.countryOrigins,
 				genderPreference: data.preferences.genderPreference,
 				maxCharacters: data.preferences.maxCharacters,
+				familyName: data.preferences.familyName ?? '',
 			});
 		}
 	}, [data]);
@@ -56,7 +58,14 @@ function PreferencesView() {
 		try {
 			await updatePrefs({
 				variables: { input: formData },
-				refetchQueries: ['NextName'],
+				update(cache, { data }) {
+					if (data?.updatePreferences) {
+						cache.writeQuery({
+							query: GET_PREFERENCES_QUERY,
+							data: { preferences: data.updatePreferences },
+						});
+					}
+				},
 			});
 			setSaved(true);
 			setTimeout(() => setSaved(false), 3000);
@@ -142,6 +151,21 @@ function PreferencesView() {
 						}
 						className="w-full h-2 bg-secondary/30 rounded-lg appearance-none cursor-pointer accent-primary"
 					/>
+				</section>
+
+				{/* Family Name */}
+				<section>
+					<h3 className="text-lg font-bold text-charcoal mb-4">Family Name</h3>
+					<input
+						type="text"
+						value={formData.familyName}
+						onChange={(e) => setFormData({ ...formData, familyName: e.target.value })}
+						placeholder="Enter your family name (optional)"
+						className="w-full p-3 bg-white/50 rounded-xl border border-border focus:ring-2 focus:ring-sage-green focus:border-transparent"
+					/>
+					<p className="text-xs text-muted-foreground mt-2">
+						Will be displayed below names on cards and in lists
+					</p>
 				</section>
 
 				<button

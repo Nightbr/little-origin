@@ -22,4 +22,9 @@ export default defineConfig({
 			'@graphql': path.resolve(__dirname, './src/graphql'),
 		},
 	},
+	server: {
+		deps: {
+			inline: true,
+		},
+	},
 });

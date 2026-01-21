@@ -9,6 +9,7 @@ export type { NameData };
 
 interface SwipeCardProps {
 	name: NameData;
+	familyName?: string;
 	onSwipeComplete: (nameId: string, isLiked: boolean) => void;
 	onDragProgress?: (progress: number) => void;
 }
@@ -25,7 +26,7 @@ const SWIPE_THRESHOLD = 100;
  * 3. Uses framer-motion's useAnimation for controlled exit animations
  * 4. Reports drag progress to parent for background card reveal effect
  */
-export function SwipeCard({ name, onSwipeComplete, onDragProgress }: SwipeCardProps) {
+export function SwipeCard({ name, familyName, onSwipeComplete, onDragProgress }: SwipeCardProps) {
 	const controls = useAnimation();
 
 	// Capture the name ID at swipe initiation to avoid stale closure issues
@@ -162,6 +163,7 @@ export function SwipeCard({ name, onSwipeComplete, onDragProgress }: SwipeCardPr
 		>
 			<SwipeCardContent
 				name={name}
+				familyName={familyName}
 				showOverlays
 				dislikeOpacity={leftOpacity}
 				likeOpacity={rightOpacity}

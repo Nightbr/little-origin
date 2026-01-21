@@ -1,6 +1,10 @@
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NEXT_NAMES_QUERY, REVIEW_NAME_MUTATION } from '../../graphql/operations';
+import {
+	GET_PREFERENCES_QUERY,
+	NEXT_NAMES_QUERY,
+	REVIEW_NAME_MUTATION,
+} from '../../graphql/operations';
 import { BackgroundCard } from './BackgroundCard';
 import { type NameData, SwipeCard } from './SwipeCard';
 
@@ -15,6 +19,8 @@ export function SwipeView() {
 		},
 	);
 	const [reviewName] = useMutation(REVIEW_NAME_MUTATION);
+	const { data: prefsData } = useQuery(GET_PREFERENCES_QUERY);
+	const familyName = prefsData?.preferences?.familyName || '';
 
 	// Local queue of names - the source of truth for the UI
 	const [nameQueue, setNameQueue] = useState<NameData[]>([]);
@@ -178,7 +184,11 @@ export function SwipeView() {
 						{/* Next card (background) - opacity/scale follow drag progress */}
 						{nextName && (
 							<div className="absolute inset-0 z-0">
-								<BackgroundCard name={nextName} revealProgress={dragProgress} />
+								<BackgroundCard
+									name={nextName}
+									familyName={familyName}
+									revealProgress={dragProgress}
+								/>
 							</div>
 						)}
 
@@ -187,6 +197,7 @@ export function SwipeView() {
 							<SwipeCard
 								key={currentName.id}
 								name={currentName}
+								familyName={familyName}
 								onSwipeComplete={handleSwipeComplete}
 								onDragProgress={handleDragProgress}
 							/>

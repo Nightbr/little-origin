@@ -54,12 +54,14 @@ export const typeDefs = `#graphql
     countryOrigins: [String!]!
     genderPreference: GenderPreference!
     maxCharacters: Int!
+    familyName: String!
   }
 
   input UpdatePreferencesInput {
     countryOrigins: [String!]
     genderPreference: GenderPreference
     maxCharacters: Int
+    familyName: String
   }
 
   type SeedResult {

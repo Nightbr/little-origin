@@ -12,6 +12,7 @@ export interface NameData {
 
 interface SwipeCardContentProps {
 	name: NameData;
+	familyName?: string;
 	/** Whether to show like/dislike overlays based on drag direction */
 	showOverlays?: boolean;
 	/** Opacity for the dislike overlay (0-1) */
@@ -36,6 +37,7 @@ interface SwipeCardContentProps {
  */
 export function SwipeCardContent({
 	name,
+	familyName,
 	showOverlays = true,
 	dislikeOpacity = 0,
 	likeOpacity = 0,
@@ -90,9 +92,10 @@ export function SwipeCardContent({
 			<div className="flex-1 flex flex-col items-center justify-center p-8 z-20">
 				<GenderBadge gender={name.gender} size="lg" className="mb-6" />
 
-				<h1 className="text-6xl font-heading text-charcoal mb-2 text-center tracking-tight">
+				<h1 className="text-6xl font-heading text-charcoal mb-1 text-center tracking-tight">
 					{name.name}
 				</h1>
+				{familyName && <p className="text-4xl font-medium text-charcoal/70 mb-2">{familyName}</p>}
 
 				<div className="mt-12 text-muted-foreground/40 text-sm font-medium tracking-widest uppercase">
 					{name.originCountry}

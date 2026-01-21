@@ -20,7 +20,13 @@
 		"**/*.test.ts",
 		"**/*.spec.ts",
 		"**/*.config.js",
-		"**/*.config.ts"
+		"**/*.config.ts",
+		"apps/web/src/routeTree.gen.ts",
+		"apps/api/src/graphql/types.ts",
+		"apps/api/src/context/request-context.ts",
+		"apps/api/src/server.ts",
+		"apps/api/src/utils/jwt.ts",
+		"apps/web/src/hooks/useSwipeGesture.ts"
 	],
 	"ignoreDependencies": ["pino-pretty"]
 }

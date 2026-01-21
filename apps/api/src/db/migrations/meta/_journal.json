@@ -15,6 +15,13 @@
       "when": 1768834937353,
       "tag": "0001_steep_agent_zero",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769017774210,
+      "tag": "0002_outstanding_mongoose",
+      "breakpoints": true
     }
   ]
 }

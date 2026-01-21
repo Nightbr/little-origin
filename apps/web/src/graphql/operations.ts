@@ -124,6 +124,7 @@ export const GET_PREFERENCES_QUERY = gql`
       countryOrigins
       genderPreference
       maxCharacters
+      familyName
     }
   }
 `;
@@ -134,6 +135,7 @@ export const UPDATE_PREFERENCES_MUTATION = gql`
       countryOrigins
       genderPreference
       maxCharacters
+      familyName
     }
   }
 `;
@@ -181,6 +183,7 @@ export const SAVE_ONBOARDING_PREFERENCES_MUTATION = gql`
       countryOrigins
       genderPreference
       maxCharacters
+      familyName
     }
   }
 `;

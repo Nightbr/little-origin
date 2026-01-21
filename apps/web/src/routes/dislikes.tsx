@@ -1,5 +1,5 @@
 import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
-import { DISLIKED_NAMES_QUERY } from '@/graphql/operations';
+import { DISLIKED_NAMES_QUERY, GET_PREFERENCES_QUERY } from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { HeartOff } from 'lucide-react';
@@ -30,6 +30,8 @@ export const Route = createFileRoute('/dislikes')({
 
 function DislikesList() {
 	const { data, loading, error } = useQuery(DISLIKED_NAMES_QUERY, { fetchPolicy: 'network-only' });
+	const { data: prefsData } = useQuery(GET_PREFERENCES_QUERY);
+	const familyName = prefsData?.preferences?.familyName || '';
 
 	if (loading)
 		return <div className="text-center py-20 animate-pulse text-sage-green">Loading...</div>;
@@ -55,7 +57,10 @@ function DislikesList() {
 					className="p-6 bg-white/50 rounded-2xl border border-border transition-all opacity-60 hover:opacity-100"
 				>
 					<div className="flex items-center justify-between mb-2">
-						<h3 className="text-2xl font-heading text-charcoal/80">{name.name}</h3>
+						<h3 className="text-2xl font-heading text-charcoal/80">
+							{name.name}
+							{familyName && <span className="text-charcoal/50"> {familyName}</span>}
+						</h3>
 						<GenderBadge gender={name.gender} size="md" muted />
 					</div>
 					<p className="text-sm text-muted-foreground">{name.originCountry}</p>

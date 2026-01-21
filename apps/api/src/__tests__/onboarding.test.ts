@@ -36,6 +36,7 @@ describe('Onboarding flow', () => {
 			countryOrigins: ['US', 'FR'],
 			genderPreference: 'both',
 			maxCharacters: 12,
+			familyName: '',
 		};
 
 		const savePrefsResponse = await request(app)
@@ -51,6 +52,7 @@ describe('Onboarding flow', () => {
 		expect(savePrefsData.saveOnboardingPreferences.countryOrigins).toEqual(
 			prefsInput.countryOrigins,
 		);
+		expect(savePrefsData.saveOnboardingPreferences.familyName).toBe('');
 
 		const completeResponse = await request(app)
 			.post(GRAPHQL_ENDPOINT)

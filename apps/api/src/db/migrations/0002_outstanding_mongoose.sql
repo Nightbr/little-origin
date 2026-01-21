@@ -1,0 +1,1 @@
+ALTER TABLE `preferences` ADD `family_name` text DEFAULT '' NOT NULL;

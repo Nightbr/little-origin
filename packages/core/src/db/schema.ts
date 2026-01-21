@@ -24,6 +24,7 @@ export const preferences = sqliteTable('preferences', {
 	countryOrigins: text('country_origins', { mode: 'json' }).$type<string[]>().notNull(),
 	genderPreference: text('gender_preference', { enum: GENDER_PREF_ENUM }).notNull(),
 	maxCharacters: integer('max_characters').notNull(),
+	familyName: text('family_name').notNull().default(''),
 	updatedAt: integer('updated_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date()),

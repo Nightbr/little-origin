@@ -7,6 +7,7 @@ interface Preferences {
 	countryOrigins: string[];
 	genderPreference: 'male' | 'female' | 'both';
 	maxCharacters: number;
+	familyName: string;
 }
 
 interface ConfirmStepProps {
@@ -53,6 +54,12 @@ export function ConfirmStep({ users, preferences, onComplete, loading, error }: 
 							Origins: {countryNames}
 							<br />
 							Max length: {preferences.maxCharacters} characters
+							{preferences.familyName && (
+								<>
+									<br />
+									Family name: {preferences.familyName}
+								</>
+							)}
 						</p>
 					</div>
 				</div>
