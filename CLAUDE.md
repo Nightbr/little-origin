@@ -135,3 +135,19 @@ Node.js >= 24 and pnpm >= 10 are required. Use mise to manage Node versions.
 ## Testing
 
 Vitest is used across all packages. Test files should be co-located with source files or in `__tests__` directories.
+
+## Pre-Commit Quality Check
+
+Before committing any code, always run the full quality check suite:
+
+```bash
+pnpm lint          # Check for linting errors
+pnpm typecheck     # Verify TypeScript types
+pnpm deps:check    # Verify dependency versions match
+pnpm deps:unused   # Check for unused dependencies
+```
+
+For a complete validation (as run in CI):
+```bash
+pnpm lint && pnpm typecheck && pnpm deps:check && pnpm deps:unused
+```

@@ -1,20 +1,26 @@
 {
-  "$schema": "https://unpkg.com/knip@5/schema.json",
-  "workspaces": {
-    ".": {
-      "entry": ["package.json"]
-    },
-    "apps/api": {
-      "entry": ["src/scripts/*.ts"],
-      "project": ["src/**/*.ts"]
-    },
-    "apps/web": {
-      "entry": ["src/main.tsx"],
-      "project": ["src/**/*.ts", "src/**/*.tsx"]
-    },
-    "packages/*": {
-      "project": ["src/**/*.ts"]
-    }
-  },
-  "ignore": ["**/*.test.ts", "**/*.spec.ts", "**/*.config.js", "**/*.config.ts"]
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"workspaces": {
+		".": {
+			"entry": ["package.json"]
+		},
+		"apps/api": {
+			"entry": ["package.json"],
+			"project": ["src/**/*.ts"]
+		},
+		"apps/web": {
+			"entry": ["src/main.tsx"],
+			"project": ["src/**/*.ts", "src/**/*.tsx"]
+		},
+		"packages/*": {
+			"project": ["src/**/*.ts"]
+		}
+	},
+	"ignore": [
+		"**/*.test.ts",
+		"**/*.spec.ts",
+		"**/*.config.js",
+		"**/*.config.ts"
+	],
+	"ignoreDependencies": ["pino-pretty"]
 }

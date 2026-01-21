@@ -26,6 +26,4 @@ const logger = !isProdEnv
 		})
 	: pino(baseOptions);
 
-export type AppLogger = typeof logger;
-
 export { logger };

@@ -15,6 +15,7 @@ import pinoHttp from 'pino-http';
 import { WebSocketServer } from 'ws';
 import { env } from './config/env';
 import { logger } from './config/logger';
+import { getRequestContext, runWithRequestContext } from './context/request-context';
 import { db } from './db/client';
 import { runMigrations } from './db/migrate';
 import { schema } from './graphql/schema';
@@ -113,10 +114,29 @@ export async function createHttpServer(): Promise<ServerSetup> {
 		cors<CorsRequest>({ origin: true, credentials: true }),
 		cookieParser(),
 		express.json(),
+		async (req, _res, next) => {
+			const user = await getUserFromRequest(req);
+			const requestId = randomUUID();
+
+			runWithRequestContext(
+				{
+					user,
+					requestId,
+				},
+				() => {
+					next();
+				},
+			);
+		},
 		expressMiddleware(apolloServer, {
 			context: async ({ req, res }) => {
-				const user = await getUserFromRequest(req);
-				return { req, res, db, user };
+				const store = getRequestContext();
+				return {
+					req,
+					res,
+					db,
+					user: store?.user ?? null,
+				};
 			},
 		}),
 	);
