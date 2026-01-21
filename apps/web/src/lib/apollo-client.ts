@@ -104,15 +104,42 @@ function isAuthError(err: { message?: string; extensions?: { code?: string } }):
 	);
 }
 
-// Error handling link with retry logic for 403 errors
+// Error handling link with retry logic for 403 and 502 errors
 const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+	const context = operation.getContext();
+
+	// Handle 502 Bad Gateway errors with retry
+	if (networkError && 'statusCode' in networkError && networkError.statusCode === 502) {
+		const retryCount = context.retryCount ?? 0;
+		const MAX_RETRIES = 2;
+
+		if (retryCount < MAX_RETRIES) {
+			// Retry the operation with incremented retry count
+			operation.setContext({
+				...context,
+				retryCount: retryCount + 1,
+			});
+
+			return new Observable<FetchResult>((observer) => {
+				setTimeout(() => {
+					// Add small delay before retry
+					forward(operation).subscribe({
+						next: observer.next.bind(observer),
+						error: observer.error.bind(observer),
+						complete: observer.complete.bind(observer),
+					});
+				}, 500 * (retryCount + 1)); // Exponential backoff: 500ms, 1000ms
+			});
+		}
+		// Max retries reached, forward the error
+	}
+
 	const hasAuthError =
 		graphQLErrors?.some(isAuthError) ||
 		(networkError && 'statusCode' in networkError && networkError.statusCode === 403);
 
 	if (hasAuthError) {
 		// Check if we've already tried refreshing for this operation
-		const context = operation.getContext();
 		if (context.hasTriedRefresh) {
 			// Already tried refreshing, logout
 			handleUnauthorized();
