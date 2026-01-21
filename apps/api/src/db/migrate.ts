@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import { logger } from '../config/logger';
 import { db } from './client';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,13 +32,13 @@ export async function runMigrations(): Promise<void> {
 		}
 	}
 
-	console.log('🔄 Running database migrations...');
+	logger.info('🔄 Running database migrations...');
 
 	try {
 		migrate(db, { migrationsFolder });
-		console.log('✅ Database migrations complete');
+		logger.info('✅ Database migrations complete');
 	} catch (error) {
-		console.error('❌ Migration failed:', error);
+		logger.error({ err: error, migrationsFolder }, '❌ Migration failed');
 		throw error;
 	}
 }

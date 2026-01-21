@@ -121,14 +121,17 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 			});
 
 			return new Observable<FetchResult>((observer) => {
-				setTimeout(() => {
-					// Add small delay before retry
-					forward(operation).subscribe({
-						next: observer.next.bind(observer),
-						error: observer.error.bind(observer),
-						complete: observer.complete.bind(observer),
-					});
-				}, 500 * (retryCount + 1)); // Exponential backoff: 500ms, 1000ms
+				setTimeout(
+					() => {
+						// Add small delay before retry
+						forward(operation).subscribe({
+							next: observer.next.bind(observer),
+							error: observer.error.bind(observer),
+							complete: observer.complete.bind(observer),
+						});
+					},
+					500 * (retryCount + 1),
+				); // Exponential backoff: 500ms, 1000ms
 			});
 		}
 		// Max retries reached, forward the error

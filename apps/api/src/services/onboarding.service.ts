@@ -2,6 +2,7 @@ import { appSettings, insertUserSchema, users } from '@little-origin/core';
 import { MAX_USERS } from '@little-origin/core';
 import type { InsertPreferences } from '@little-origin/core';
 import { count, eq } from 'drizzle-orm';
+import { logger } from '../config/logger';
 import { db } from '../db/client';
 import { hashPassword } from '../utils/password';
 import { nameService } from './name.service';
@@ -103,9 +104,9 @@ class OnboardingService {
 		}
 
 		// Seed all names for all available countries
-		console.log('🌱 Seeding names during onboarding...');
+		logger.info('🌱 Seeding names during onboarding...');
 		const seedResult = await nameService.seedNames();
-		console.log(
+		logger.info(
 			`✅ Seeded ${seedResult.count}/${seedResult.total} names from ${seedResult.source}`,
 		);
 
