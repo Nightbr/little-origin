@@ -11,7 +11,6 @@ import type { CorsRequest } from 'cors';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import { useServer } from 'graphql-ws/lib/use/ws';
-import pinoHttp from 'pino-http';
 import { WebSocketServer } from 'ws';
 import { env } from './config/env';
 import { logger } from './config/logger';
@@ -20,7 +19,8 @@ import { db } from './db/client';
 import { runMigrations } from './db/migrate';
 import { schema } from './graphql/schema';
 import { getUserFromRequest, getUserFromToken } from './middleware/auth';
-import { verifyToken } from './utils/jwt';
+import { createRequestLogger } from './middleware/logging';
+import { captureResponseBody } from './middleware/response-body';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,41 +35,7 @@ export async function createHttpServer(): Promise<ServerSetup> {
 
 	const app = express();
 	const httpServer = createServer(app);
-
-	const requestLogger = pinoHttp({
-		logger,
-		genReqId: () => randomUUID(),
-		customProps: (req) => {
-			const authHeader = req.headers.authorization;
-			if (!authHeader) {
-				return { auth: { hasToken: false } };
-			}
-
-			const token = authHeader.split(' ')[1];
-			if (!token) {
-				return { auth: { hasToken: false } };
-			}
-
-			const payload = verifyToken(token);
-			if (!payload) {
-				return { auth: { hasToken: true, valid: false } };
-			}
-
-			return {
-				auth: {
-					hasToken: true,
-					valid: true,
-					userId: payload.userId,
-				},
-			};
-		},
-		customLogLevel: (res) => {
-			const statusCode = res.statusCode ?? 200;
-			if (statusCode >= 500) return 'error';
-			if (statusCode >= 400) return 'warn';
-			return 'info';
-		},
-	});
+	const requestLogger = createRequestLogger();
 
 	const wsServer = new WebSocketServer({
 		server: httpServer,
@@ -109,11 +75,12 @@ export async function createHttpServer(): Promise<ServerSetup> {
 
 	app.use(
 		'/graphql',
-		// Log only API requests (GraphQL endpoint), not static assets
-		requestLogger,
 		cors<CorsRequest>({ origin: true, credentials: true }),
 		cookieParser(),
 		express.json(),
+		captureResponseBody(),
+		// Log only API requests (GraphQL endpoint), not static assets
+		requestLogger,
 		async (req, _res, next) => {
 			const user = await getUserFromRequest(req);
 			const requestId = randomUUID();

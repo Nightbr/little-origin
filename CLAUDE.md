@@ -45,7 +45,7 @@ pnpm deps:unused      # Find unused dependencies (Knip)
 
 ### Monorepo Structure
 
-```
+```text
 apps/
   web/          # React + Vite frontend (TanStack Router, Apollo Client, Framer Motion)
   api/          # Express + Apollo GraphQL backend (SQLite, Drizzle ORM, JWT auth)
@@ -57,14 +57,14 @@ packages/
 
 ### Key Architectural Patterns
 
-**Frontend (apps/web)**
+#### Frontend (apps/web)
 
 - TanStack Router with file-based routing (routeTree.gen.ts auto-generated)
 - Apollo Client for GraphQL queries/mutations + WebSocket subscriptions
 - Framer Motion for swipe card physics and gestures
 - Authentication flow with automatic JWT refresh token rotation
 
-**Backend (apps/api)**
+#### Backend (apps/api)
 
 - Apollo Server with GraphQL schema stitching
 - Drizzle ORM with type-safe queries and proper relations
@@ -72,7 +72,7 @@ packages/
 - JWT + refresh token authentication with Argon2 password hashing
 - Modular service layer for business logic
 
-**Shared (packages/core)**
+#### Shared (packages/core)
 
 - Drizzle schemas exported for both backend and frontend type safety
 - Common types, enums, and constants used across apps
@@ -148,6 +148,7 @@ pnpm deps:unused   # Check for unused dependencies
 ```
 
 For a complete validation (as run in CI):
+
 ```bash
 pnpm lint && pnpm typecheck && pnpm deps:check && pnpm deps:unused
 ```
