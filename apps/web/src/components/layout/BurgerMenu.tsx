@@ -89,6 +89,9 @@ export function BurgerMenu() {
 							<LogOut className="group-hover:translate-x-1 transition-transform" size={20} />
 							<span className="font-heading font-semibold">Logout</span>
 						</button>
+						<p className="text-sm text-muted-foreground/70 text-center mt-4">
+							Built with ❤️ for new parents
+						</p>
 					</motion.div>
 				)}
 			</AnimatePresence>
