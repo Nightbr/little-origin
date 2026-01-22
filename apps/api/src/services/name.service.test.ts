@@ -143,4 +143,76 @@ describe('NameService Integration Tests', () => {
 		expect(second).not.toBeNull();
 		expect(second?.id).not.toBe(first?.id);
 	});
+
+	it('should exclude IDs passed in excludeIds parameter', async () => {
+		await db
+			.update(preferences)
+			.set({
+				genderPreference: 'both',
+				countryOrigins: ['FR', 'US', 'ES'],
+				maxCharacters: 20,
+			})
+			.where(eq(preferences.id, 1));
+
+		// Get all available names
+		const allNames = await db.select().from(names);
+		expect(allNames.length).toBe(4);
+
+		// Exclude first two names
+		const excludeIds = [allNames[0].id, allNames[1].id];
+
+		// Request 3 names but 2 are excluded, so should only get 2
+		const result = await nameService.getNextNames(testUser.id, 3, excludeIds);
+
+		expect(result.length).toBe(2);
+		expect(result.map((n) => n.id)).not.toContain(allNames[0].id);
+		expect(result.map((n) => n.id)).not.toContain(allNames[1].id);
+	});
+
+	it('should handle empty excludeIds array', async () => {
+		await db
+			.update(preferences)
+			.set({
+				genderPreference: 'both',
+				countryOrigins: ['FR', 'US', 'ES'],
+				maxCharacters: 20,
+			})
+			.where(eq(preferences.id, 1));
+
+		// With no exclusions, should return all available names
+		const result = await nameService.getNextNames(testUser.id, 10, []);
+
+		expect(result.length).toBe(4);
+	});
+
+	it('should combine excludeIds with reviewed names filtering', async () => {
+		await db
+			.update(preferences)
+			.set({
+				genderPreference: 'both',
+				countryOrigins: ['FR', 'US', 'ES'],
+				maxCharacters: 20,
+			})
+			.where(eq(preferences.id, 1));
+
+		// Get all names
+		const allNames = await db.select().from(names);
+
+		// Mark one as reviewed
+		await db.insert(reviews).values({
+			userId: testUser.id,
+			nameId: allNames[0].id,
+			isLiked: true,
+		});
+
+		// Exclude a different name
+		const excludeIds = [allNames[1].id];
+
+		// Should get the remaining 2 names (excluding both reviewed and excluded)
+		const result = await nameService.getNextNames(testUser.id, 10, excludeIds);
+
+		expect(result.length).toBe(2);
+		expect(result.map((n) => n.id)).not.toContain(allNames[0].id); // reviewed
+		expect(result.map((n) => n.id)).not.toContain(allNames[1].id); // excluded
+	});
 });

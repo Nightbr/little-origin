@@ -27,6 +27,8 @@ export function SwipeView() {
 	const [isInitialized, setIsInitialized] = useState(false);
 	const isFetchingRef = useRef(false);
 	const nameQueueRef = useRef<NameData[]>([]);
+	// Track names currently being reviewed to prevent duplicates during the async window
+	const pendingReviewIdsRef = useRef<Set<string>>(new Set());
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -46,14 +48,16 @@ export function SwipeView() {
 		isFetchingRef.current = true;
 
 		try {
-			// Get current queue IDs to exclude from the API response
+			// Exclude both current queue IDs and pending review IDs to prevent duplicates
 			const currentQueueIds = nameQueueRef.current.map((n) => n.id);
-			console.log('[SwipeView] fetchMoreNames: Fetching with excludeIds:', currentQueueIds);
+			const pendingIds = Array.from(pendingReviewIdsRef.current);
+			const excludeIds = [...currentQueueIds, ...pendingIds];
+			console.log('[SwipeView] fetchMoreNames: Fetching with excludeIds:', excludeIds);
 
 			const result = await fetchNames({
 				variables: {
 					limit: FETCH_BATCH_SIZE,
-					excludeIds: currentQueueIds,
+					excludeIds,
 				},
 			});
 			const newNames = result.data?.nextNames ?? [];
@@ -141,6 +145,9 @@ export function SwipeView() {
 			// Reset drag progress
 			setDragProgress(0);
 
+			// Mark as pending review before removing from queue to prevent race condition
+			pendingReviewIdsRef.current.add(nameId);
+
 			// Remove the swiped name from queue by ID (not just first element)
 			setNameQueue((prev) => {
 				const updated = prev.filter((n) => n.id !== nameId);
@@ -151,9 +158,16 @@ export function SwipeView() {
 				return updated;
 			});
 
-			// Submit review in background
+			// Submit review and clear from pending when done
 			reviewName({
 				variables: { nameId, isLiked },
+			}).finally(() => {
+				// Review is now in the database, safe to remove from pending
+				pendingReviewIdsRef.current.delete(nameId);
+				console.log(
+					'[SwipeView] handleSwipeComplete: Review complete, removed from pending:',
+					nameId,
+				);
 			});
 		},
 		[reviewName],
