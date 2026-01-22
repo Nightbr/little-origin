@@ -1,4 +1,4 @@
-import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
+import { NameCard } from '@/components/lists/NameCard';
 import { GET_PREFERENCES_QUERY, LIKED_NAMES_QUERY } from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
@@ -7,7 +7,7 @@ import { Heart } from 'lucide-react';
 interface NameItem {
 	id: string;
 	name: string;
-	gender: Gender;
+	gender: string;
 	originCountry: string;
 }
 
@@ -55,21 +55,17 @@ function LikesList() {
 	}
 
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
 			{names.map((name: NameItem) => (
-				<div
+				<NameCard
 					key={name.id}
-					className="p-6 bg-white rounded-2xl border border-border shadow-nurture transition-all hover:scale-[1.02]"
-				>
-					<div className="flex items-center justify-between mb-2">
-						<h3 className="text-2xl font-heading text-charcoal">
-							{name.name}
-							{familyName && <span className="text-charcoal/70"> {familyName}</span>}
-						</h3>
-						<GenderBadge gender={name.gender} size="md" />
-					</div>
-					<p className="text-muted-foreground text-sm">{name.originCountry}</p>
-				</div>
+					id={name.id}
+					name={name.name}
+					gender={name.gender as 'male' | 'female'}
+					originCountry={name.originCountry}
+					isLiked={true}
+					familyName={familyName}
+				/>
 			))}
 		</div>
 	);

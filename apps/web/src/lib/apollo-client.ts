@@ -214,5 +214,17 @@ const splitLink = split(
 
 export const client = new ApolloClient({
 	link: splitLink,
-	cache: new InMemoryCache(),
+	cache: new InMemoryCache({
+		typePolicies: {
+			Query: {
+				fields: {
+					allMatches: {
+						// Just replace the entire array when new data comes in
+						// This is safe because allMatches refetches the complete list
+						merge: (_existing, incoming) => incoming,
+					},
+				},
+			},
+		},
+	}),
 });

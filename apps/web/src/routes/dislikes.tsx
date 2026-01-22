@@ -1,4 +1,4 @@
-import { type Gender, GenderBadge } from '@/components/ui/GenderBadge';
+import { NameCard } from '@/components/lists/NameCard';
 import { DISLIKED_NAMES_QUERY, GET_PREFERENCES_QUERY } from '@/graphql/operations';
 import { useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
@@ -7,7 +7,7 @@ import { HeartOff } from 'lucide-react';
 interface NameItem {
 	id: string;
 	name: string;
-	gender: Gender;
+	gender: string;
 	originCountry: string;
 }
 
@@ -50,21 +50,17 @@ function DislikesList() {
 	}
 
 	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
 			{names.map((name: NameItem) => (
-				<div
+				<NameCard
 					key={name.id}
-					className="p-6 bg-white/50 rounded-2xl border border-border transition-all opacity-60 hover:opacity-100"
-				>
-					<div className="flex items-center justify-between mb-2">
-						<h3 className="text-2xl font-heading text-charcoal/80">
-							{name.name}
-							{familyName && <span className="text-charcoal/50"> {familyName}</span>}
-						</h3>
-						<GenderBadge gender={name.gender} size="md" muted />
-					</div>
-					<p className="text-sm text-muted-foreground">{name.originCountry}</p>
-				</div>
+					id={name.id}
+					name={name.name}
+					gender={name.gender as 'male' | 'female'}
+					originCountry={name.originCountry}
+					isLiked={false}
+					familyName={familyName}
+				/>
 			))}
 		</div>
 	);
