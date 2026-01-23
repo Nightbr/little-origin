@@ -88,8 +88,8 @@ export function NameCard({ id, name, gender, originCountry, isLiked, familyName 
 
 	// Different styles for liked vs disliked
 	const cardClasses = isLiked
-		? 'p-6 bg-white rounded-2xl border border-border shadow-nurture transition-all hover:scale-[1.02] cursor-pointer text-left relative'
-		: 'p-6 bg-white/50 rounded-2xl border border-border transition-all opacity-60 hover:opacity-100 cursor-pointer text-left relative';
+		? 'p-6 min-h-[120px] bg-white rounded-2xl border border-border shadow-nurture transition-all hover:scale-[1.02] cursor-pointer text-left relative'
+		: 'p-6 min-h-[120px] bg-white/50 rounded-2xl border border-border transition-all opacity-60 hover:opacity-100 cursor-pointer text-left relative';
 
 	const textColorClass = isLiked ? 'text-charcoal' : 'text-charcoal/80';
 	const textColorSub = isLiked ? 'text-charcoal/70' : 'text-charcoal/50';
