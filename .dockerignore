@@ -57,3 +57,5 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Extended dataset
+packages/name-data/data/extended-dataset
