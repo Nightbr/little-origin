@@ -70,6 +70,8 @@ async function attemptTokenRefresh(): Promise<string | null> {
 			if (data.data?.refreshToken?.accessToken) {
 				const newToken = data.data.refreshToken.accessToken;
 				setAccessToken(newToken);
+				// Reconnect WebSocket with fresh token
+				reconnectWebSocket();
 				return newToken;
 			}
 			return null;
@@ -194,14 +196,65 @@ export function resetAuthErrorCounter(): void {
 // Export refresh function for use by auth hooks
 export { attemptTokenRefresh };
 
-const wsLink = new GraphQLWsLink(
-	createClient({
-		url: WS_URL,
-		connectionParams: () => ({
-			authToken: getAccessToken(),
-		}),
+/**
+ * Exponential backoff for WebSocket reconnection attempts
+ * The retries argument contains the number of completed retries
+ */
+function retryWait(retries: number): Promise<void> {
+	// Generate exponential backoff delay: 500ms, 1s, 2s, 4s, 8s
+	const delay = Math.min(500 * 2 ** retries, 8000);
+	console.debug(`[WS] Reconnection attempt ${retries + 1}, waiting ${delay}ms`);
+	return new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+// Create and store the WebSocket client for later access
+const wsClient = createClient({
+	url: WS_URL,
+	lazy: true, // Only connect when there are active subscriptions
+	connectionParams: () => ({
+		authToken: getAccessToken(),
 	}),
-);
+	retryAttempts: 5,
+	retryWait,
+	on: {
+		connecting: () => {
+			console.debug('[WS] Connecting...');
+		},
+		connected: () => {
+			console.debug('[WS] Connected');
+		},
+		ping: () => {
+			console.debug('[WS] Ping');
+		},
+		pong: () => {
+			console.debug('[WS] Pong');
+		},
+		opened: () => {
+			console.debug('[WS] Opened');
+		},
+		closed: (event: unknown) => {
+			// Type-safe property access for CloseEvent
+			const code = event && typeof event === 'object' && 'code' in event ? event.code : 'unknown';
+			const reason = event && typeof event === 'object' && 'reason' in event ? event.reason : '';
+			console.debug(`[WS] Closed: code=${String(code)} reason=${String(reason)}`);
+		},
+		error: (error: unknown) => {
+			console.error('[WS] Error:', error);
+		},
+	},
+});
+
+/**
+ * Re-establish the WebSocket connection with fresh auth token
+ * Call this when the access token is refreshed
+ */
+function reconnectWebSocket(): void {
+	console.debug('[WS] Reconnecting with fresh token...');
+	// Terminate existing connection - lazy mode will reconnect when subscriptions are active
+	wsClient.terminate();
+}
+
+const wsLink = new GraphQLWsLink(wsClient);
 
 const splitLink = split(
 	({ query }) => {
