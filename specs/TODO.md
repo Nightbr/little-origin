@@ -4,7 +4,7 @@
 
 ### Preferences & Personalization
 
-- [ ] **Family Name Configuration**: Add family name input in preferences
+- [x] **Family Name Configuration**: Add family name input in preferences
   - Store family name in preferences table
   - Display family name below first name on swipe cards
   - Show full name (first + family) in lists
@@ -12,9 +12,9 @@
 ### Undo & Revert Actions
 
 - [ ] **Revert Last Action**: Undo button for most recent swipe action
-- [ ] **Revert Likes in List**: Remove names from Liked list directly
-- [ ] **Revert Dislikes in List**: Remove names from Disliked list directly
-- [ ] **Match Sync on Revert**: When un-liking a name, update or remove corresponding match
+- [x] **Revert Likes in List**: Remove names from Liked list directly
+- [x] **Revert Dislikes in List**: Remove names from Disliked list directly
+- [x] **Match Sync on Revert**: When un-liking a name, update or remove corresponding match
 
 ### Filtering & Search
 

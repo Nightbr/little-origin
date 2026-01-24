@@ -1,13 +1,8 @@
-import {
-	DEFAULT_PREFERENCES,
-	SUPPORTED_COUNTRIES,
-	names,
-	preferences,
-	reviews,
-} from '@little-origin/core';
+import { SUPPORTED_COUNTRIES, names, reviews } from '@little-origin/core';
 import { getNamesByCountries } from '@little-origin/name-data';
 import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import { db } from '../db/client';
+import { preferencesService } from './preferences.service';
 
 class NameService {
 	private static readonly BATCH_SIZE = 100;
@@ -18,8 +13,7 @@ class NameService {
 	 */
 	async seedNames() {
 		// Get preferences (singleton) - only used for gender/maxCharacters
-		const prefsList = await db.select().from(preferences).limit(1);
-		const prefs = prefsList[0] || DEFAULT_PREFERENCES;
+		const prefs = await preferencesService.getPreferences();
 
 		// Load static names for ALL countries
 		const allCountryCodes = SUPPORTED_COUNTRIES.map((c) => c.code);
@@ -60,9 +54,8 @@ class NameService {
 	}
 
 	async getNextNames(userId: number, limit = 2, excludeIds: number[] = []) {
-		// Get preferences
-		const prefsList = await db.select().from(preferences).limit(1);
-		const prefs = prefsList[0] || DEFAULT_PREFERENCES;
+		// Get preferences (cached!)
+		const prefs = await preferencesService.getPreferences();
 
 		// Subquery: names reviewed by user
 		const reviewedIdsQuery = db

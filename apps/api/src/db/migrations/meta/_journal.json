@@ -22,6 +22,13 @@
       "when": 1769017774210,
       "tag": "0002_outstanding_mongoose",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1769272938569,
+      "tag": "0003_handy_supernaut",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+CREATE INDEX `idx_names_gender_country` ON `names` (`gender`,`origin_country`);

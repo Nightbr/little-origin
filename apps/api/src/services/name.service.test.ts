@@ -4,6 +4,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
 import { runMigrations } from '../db/migrate';
 import { nameService } from './name.service';
+import { preferencesService } from './preferences.service';
 
 describe('NameService Integration Tests', () => {
 	let testUser: User;
@@ -44,6 +45,9 @@ describe('NameService Integration Tests', () => {
 	});
 
 	beforeEach(async () => {
+		// Clear preferences cache between tests
+		preferencesService.clearCache();
+
 		// Clean up all reviews first (FK constraint: reviews reference names)
 		await db.delete(reviews);
 

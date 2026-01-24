@@ -40,4 +40,43 @@ if (dbPath !== ':memory:') {
 logger.info(`📂 Using database at: ${dbPath}`);
 
 const sqlite = new Database(dbPath);
+
+// Enable WAL mode for better concurrent read/write access
+sqlite.pragma('journal_mode = WAL');
+
+// Slow query logging configuration
+const SLOW_QUERY_THRESHOLD = 50; // ms
+
+// Wrap the prepare method to log slow queries
+const originalPrepare = sqlite.prepare.bind(sqlite);
+(sqlite.prepare as unknown) = (sql: string) => {
+	const stmt = originalPrepare(sql);
+
+	// Wrap the execution methods
+	const run = stmt.run.bind(stmt);
+	const all = stmt.all.bind(stmt);
+	const get = stmt.get.bind(stmt);
+
+	const logIfSlow = (fn: () => unknown, operation: string): unknown => {
+		const start = performance.now();
+		const result = fn();
+		const duration = performance.now() - start;
+		if (duration > SLOW_QUERY_THRESHOLD) {
+			logger.warn(
+				`⚠️ Slow query (${duration.toFixed(2)}ms) [${operation}]: ${sql.slice(0, 100)}${sql.length > 100 ? '...' : ''}`,
+			);
+		}
+		return result;
+	};
+
+	return Object.assign(stmt, {
+		// biome-ignore lint/suspicious/noExplicitAny: Wrapper function needs flexible typing
+		run: (...args: unknown[]) => logIfSlow(() => (run as any)(...args), 'run'),
+		// biome-ignore lint/suspicious/noExplicitAny: Wrapper function needs flexible typing
+		all: (...args: unknown[]) => logIfSlow(() => (all as any)(...args), 'all'),
+		// biome-ignore lint/suspicious/noExplicitAny: Wrapper function needs flexible typing
+		get: (...args: unknown[]) => logIfSlow(() => (get as any)(...args), 'get'),
+	});
+};
+
 export const db = drizzle(sqlite, { schema });

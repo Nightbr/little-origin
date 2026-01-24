@@ -45,6 +45,7 @@ export const names = sqliteTable(
 	(t) => ({
 		uniqueNameGender: unique().on(t.name, t.gender),
 		countryIdx: index('idx_names_country').on(t.originCountry),
+		genderCountryIdx: index('idx_names_gender_country').on(t.gender, t.originCountry),
 	}),
 );
 
