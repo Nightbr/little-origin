@@ -1,6 +1,8 @@
 [tools]
 node = "24"
 pnpm = "10"
+python = {version = "3.11", uv = true}
+uv = "latest"
 
 [env]
 NODE_ENV = "development"
@@ -24,3 +26,13 @@ run = "turbo typecheck"
 
 [tasks.test]
 run = "turbo test"
+
+[tasks.clean-names]
+description = "Clean extended-dataset CSV files using names-dataset validation"
+dir = "packages/name-data-cleaner"
+run = ["uv sync", "uv run clean-names"]
+
+[tasks.test-names]
+description = "Run Python tests for name-data-cleaner"
+dir = "packages/name-data-cleaner"
+run = "uv run pytest -k 'not integration and not slow'"

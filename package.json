@@ -10,7 +10,9 @@
 		"test": "turbo test",
 		"deps:check": "syncpack list-mismatches",
 		"deps:fix": "syncpack fix-mismatches",
-		"deps:unused": "knip"
+		"deps:unused": "knip",
+		"clean:names": "mise run clean-names",
+		"test:names": "mise run test-names"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
