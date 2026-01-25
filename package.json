@@ -2,6 +2,7 @@
 	"name": "little-origin",
 	"private": true,
 	"scripts": {
+		"predev": "turbo build",
 		"dev": "turbo dev",
 		"build": "turbo build",
 		"lint": "turbo lint",
@@ -32,8 +33,11 @@
 			"@types/better-sqlite3": "7.6.12"
 		},
 		"onlyBuiltDependencies": [
+			"@apollo/protobufjs",
+			"@biomejs/biome",
+			"argon2",
 			"better-sqlite3",
-			"argon2"
+			"esbuild"
 		]
 	}
 }

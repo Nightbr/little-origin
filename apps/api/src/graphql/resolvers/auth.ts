@@ -1,6 +1,7 @@
 import { users } from '@little-origin/core';
 import { db } from '../../db/client';
 import { authService } from '../../services/auth.service';
+import { matchService } from '../../services/match.service';
 import { REFRESH_TOKEN_COOKIE_OPTIONS } from '../../utils/jwt';
 import type { GraphQLContext } from '../types';
 
@@ -63,6 +64,17 @@ export const authResolvers = {
 
 			const { user, accessToken } = await authService.refreshAccessToken(refreshToken);
 			return { user, accessToken };
+		},
+		deleteUser: async (_: unknown, { userId }: { userId: string }, context: GraphQLContext) => {
+			if (!context.user) {
+				throw new Error('Unauthorized');
+			}
+
+			const targetUserId = Number.parseInt(userId, 10);
+			await authService.deleteUser(targetUserId, context.user.id);
+			await matchService.recalculateAllMatches();
+
+			return true;
 		},
 	},
 };
