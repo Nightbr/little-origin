@@ -6,6 +6,7 @@ import {
 	REVIEW_NAME_MUTATION,
 } from '../../graphql/operations';
 import { BackgroundCard } from './BackgroundCard';
+import { LoadingCard } from './LoadingCard';
 import { type NameData, SwipeCard } from './SwipeCard';
 
 const PREFETCH_THRESHOLD = 2;
@@ -25,6 +26,7 @@ export function SwipeView() {
 	// Local queue of names - the source of truth for the UI
 	const [nameQueue, setNameQueue] = useState<NameData[]>([]);
 	const [isInitialized, setIsInitialized] = useState(false);
+	const [isFetching, setIsFetching] = useState(false);
 	const isFetchingRef = useRef(false);
 	const nameQueueRef = useRef<NameData[]>([]);
 	// Track names currently being reviewed to prevent duplicates during the async window
@@ -46,6 +48,7 @@ export function SwipeView() {
 			return;
 		}
 		isFetchingRef.current = true;
+		setIsFetching(true);
 
 		try {
 			// Exclude both current queue IDs and pending review IDs to prevent duplicates
@@ -82,6 +85,7 @@ export function SwipeView() {
 			}
 		} finally {
 			isFetchingRef.current = false;
+			setIsFetching(false);
 		}
 	}, [fetchNames]);
 
@@ -217,7 +221,13 @@ export function SwipeView() {
 							/>
 						</div>
 					</div>
+				) : isFetching && isInitialized ? (
+					// Show loading card while fetching more names
+					<div className="relative w-full max-w-sm aspect-[3/4]">
+						<LoadingCard familyName={familyName} />
+					</div>
 				) : (
+					// Show "no more names" message only when not fetching and initialized
 					<div className="text-center p-12 bg-white/50 backdrop-blur-sm rounded-3xl border border-dashed border-sage-green/50 max-w-sm">
 						<h3 className="text-3xl font-heading text-charcoal mb-2">All caught up!</h3>
 						<p className="text-muted-foreground">No more names to review right now.</p>
