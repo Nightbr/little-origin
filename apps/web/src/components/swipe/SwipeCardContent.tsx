@@ -92,7 +92,7 @@ export function SwipeCardContent({
 			<div className="flex-1 flex flex-col items-center justify-center p-8 z-20">
 				<GenderBadge gender={name.gender} size="lg" className="mb-6" />
 
-				<h1 className="text-6xl font-heading text-charcoal mb-1 text-center tracking-tight">
+				<h1 className="w-full text-6xl font-heading text-charcoal mb-1 text-center tracking-tight break-words">
 					{name.name}
 				</h1>
 				{familyName && <p className="text-4xl font-medium text-charcoal/70 mb-2">{familyName}</p>}

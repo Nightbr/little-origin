@@ -6,7 +6,7 @@ import { z } from 'zod';
 // --- ENUMS & HELPERS ---
 export const GENDER_ENUM = ['male', 'female'] as const;
 export const GENDER_PREF_ENUM = ['male', 'female', 'both'] as const;
-export const NAME_SOURCE_ENUM = ['api', 'llm', 'seed', 'static'] as const;
+export const NAME_SOURCE_ENUM = ['api', 'extended', 'llm', 'seed', 'static'] as const;
 
 // --- TABLES ---
 

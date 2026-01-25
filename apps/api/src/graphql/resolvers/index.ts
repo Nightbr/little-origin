@@ -1,6 +1,7 @@
 import { mergeResolvers } from '@graphql-tools/merge';
 import { appResolvers } from './app';
 import { authResolvers } from './auth';
+import { ingestionResolvers } from './ingestion';
 import { matchResolvers } from './match';
 import { nameResolvers } from './name';
 import { preferenceResolvers } from './preference';
@@ -13,4 +14,5 @@ export const resolvers = mergeResolvers([
 	matchResolvers,
 	preferenceResolvers,
 	appResolvers,
+	ingestionResolvers,
 ]);

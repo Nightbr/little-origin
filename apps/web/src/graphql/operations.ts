@@ -193,3 +193,45 @@ export const COMPLETE_ONBOARDING_MUTATION = gql`
     completeOnboarding
   }
 `;
+
+// --- INGESTION OPERATIONS ---
+
+export const INGESTION_STATUS_QUERY = gql`
+  query GetIngestionStatus {
+    ingestionStatus {
+      country
+      countryName
+      loadedCount
+      isIngesting
+      progress {
+        country
+        totalNames
+        processedNames
+        currentBatch
+        totalBatches
+      }
+      error
+    }
+  }
+`;
+
+export const START_INGESTION_MUTATION = gql`
+  mutation StartIngestion($country: String!) {
+    startIngestion(country: $country) {
+      country
+      started
+    }
+  }
+`;
+
+export const NAME_INGESTION_PROGRESS_SUBSCRIPTION = gql`
+  subscription OnNameIngestionProgress {
+    nameIngestionProgress {
+      country
+      totalNames
+      processedNames
+      currentBatch
+      totalBatches
+    }
+  }
+`;
