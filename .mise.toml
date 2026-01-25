@@ -27,12 +27,12 @@ run = "turbo typecheck"
 [tasks.test]
 run = "turbo test"
 
-[tasks.clean-names]
-description = "Clean extended-dataset CSV files using names-dataset validation"
-dir = "packages/name-data-cleaner"
-run = ["uv sync", "uv run clean-names"]
+[tasks.generate-names]
+description = "Generate extended-dataset CSV files from names-dataset library"
+dir = "packages/name-data-generator"
+run = ["uv sync", "uv run generate-names"]
 
 [tasks.test-names]
-description = "Run Python tests for name-data-cleaner"
-dir = "packages/name-data-cleaner"
+description = "Run Python tests for name-data-generator"
+dir = "packages/name-data-generator"
 run = "uv run pytest -k 'not integration and not slow'"

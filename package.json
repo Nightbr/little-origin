@@ -11,7 +11,7 @@
 		"deps:check": "syncpack list-mismatches",
 		"deps:fix": "syncpack fix-mismatches",
 		"deps:unused": "knip",
-		"clean:names": "mise run clean-names",
+		"generate:names": "mise run generate-names",
 		"test:names": "mise run test-names"
 	},
 	"devDependencies": {

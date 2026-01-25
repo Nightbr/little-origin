@@ -1,13 +1,12 @@
 [project]
-name = "name-data-cleaner"
-version = "0.1.0"
-description = "Clean extended-dataset CSV files using names-dataset validation"
+name = "name-data-generator"
+version = "0.2.0"
+description = "Generate extended-dataset CSV files from names-dataset library"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "names-dataset>=3.3.1",
-    "rich>=13.0.0",
-    "regex>=2024.0.0",
+	"names-dataset>=3.3.1",
+	"rich>=13.0.0",
 ]
 
 [build-system]
@@ -15,7 +14,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-clean-names = "name_data_cleaner:main"
+generate-names = "name_data_generator:main"
 
 [dependency-groups]
 dev = [
@@ -39,7 +38,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=name_data_cleaner --cov-report=term-missing"
+addopts = "-v --cov=name_data_generator --cov-report=term-missing"
 markers = [
 	"integration: marks tests as integration tests (requires names-dataset)",
 	"slow: marks tests as slow (deselect with '-m \"not slow\"')",
