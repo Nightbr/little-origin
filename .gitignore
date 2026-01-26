@@ -23,3 +23,31 @@ coverage
 
 # OS
 .DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist-python/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg
+.venv/
+venv/
+ENV/
+env/
+
+# Python virtual environments (per-package)
+packages/*/.venv/
+packages/*/!.python-version
+
+# Mise (Python versions)
+.mise.local/
+
+# UV cache
+.uv-cache/.mcp.json

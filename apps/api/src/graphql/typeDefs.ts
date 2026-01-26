@@ -19,6 +19,14 @@ export const typeDefs = `#graphql
     static
   }
 
+  enum IngestionStatus {
+    idle
+    streaming
+    processing
+    completed
+    failed
+  }
+
   type User {
     id: ID!
     username: String!
@@ -91,6 +99,28 @@ export const typeDefs = `#graphql
     username: String!
   }
 
+  type IngestionProgress {
+    country: String!
+    totalNames: Int!
+    processedNames: Int!
+    currentBatch: Int!
+    totalBatches: Int!
+  }
+
+  type CountryIngestionStatus {
+    country: String!
+    countryName: String!
+    loadedCount: Int!
+    isIngesting: Boolean!
+    progress: IngestionProgress
+    error: String
+  }
+
+  type IngestionResult {
+    country: String!
+    started: Boolean!
+  }
+
   type Query {
     me: User
     allUsers: [User!]!
@@ -101,6 +131,7 @@ export const typeDefs = `#graphql
     allMatches: [Match!]!
     preferences: UserPreferences!
     appStatus: AppStatus!
+    ingestionStatus: [CountryIngestionStatus!]!
   }
 
   type Mutation {
@@ -116,9 +147,12 @@ export const typeDefs = `#graphql
     addOnboardingUser(username: String!, password: String!): OnboardingUser!
     saveOnboardingPreferences(input: UpdatePreferencesInput!): UserPreferences!
     completeOnboarding: Boolean!
+    # Ingestion mutations
+    startIngestion(country: String!): IngestionResult!
   }
 
   type Subscription {
     matchCreated: Match!
+    nameIngestionProgress: IngestionProgress!
   }
 `;

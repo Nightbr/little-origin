@@ -2,11 +2,22 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { Link, useRouter } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, HeartOff, Home, LogOut, Menu, Settings, UserPlus, Users, X } from 'lucide-react';
+import {
+	Heart,
+	HeartOff,
+	Home,
+	LogOut,
+	Menu,
+	Settings,
+	UserPlus,
+	Users,
+	X,
+	Zap,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const menuItems = [
+const baseMenuItems = [
 	{ label: 'Home', icon: Home, to: '/' },
 	{ label: 'Liked Names', icon: Heart, to: '/likes' },
 	{ label: 'Disliked Names', icon: HeartOff, to: '/dislikes' },
@@ -15,9 +26,13 @@ const menuItems = [
 	{ label: 'Add User', icon: UserPlus, to: '/add-user' },
 ];
 
+const advancedMenuItem = { label: 'Advanced', icon: Zap, to: '/advanced' };
+
 export function BurgerMenu() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const [tapCount, setTapCount] = useState(0);
+	const [advancedVisible, setAdvancedVisible] = useState(false);
 	const { logout, user } = useAuth();
 	const router = useRouter();
 
@@ -28,11 +43,30 @@ export function BurgerMenu() {
 
 	const toggleMenu = () => setIsOpen(!isOpen);
 
+	// Reset tap count after 2 seconds of inactivity
+	useEffect(() => {
+		if (tapCount > 0) {
+			const timeout = setTimeout(() => setTapCount(0), 2000);
+			return () => clearTimeout(timeout);
+		}
+	}, [tapCount]);
+
+	const handleFooterTap = () => {
+		const newCount = tapCount + 1;
+		setTapCount(newCount);
+		if (newCount >= 5) {
+			setAdvancedVisible(true);
+			setTapCount(0);
+		}
+	};
+
 	const handleLogout = async () => {
 		await logout();
 		router.navigate({ to: '/login' });
 		setIsOpen(false);
 	};
+
+	const menuItems = advancedVisible ? [...baseMenuItems, advancedMenuItem] : baseMenuItems;
 
 	const menuContent = (
 		<>
@@ -89,9 +123,13 @@ export function BurgerMenu() {
 							<LogOut className="group-hover:translate-x-1 transition-transform" size={20} />
 							<span className="font-heading font-semibold">Logout</span>
 						</button>
-						<p className="text-sm text-muted-foreground/70 text-center mt-4">
+						<button
+							type="button"
+							onClick={handleFooterTap}
+							className="text-sm text-muted-foreground/70 text-center mt-4 cursor-pointer hover:text-muted-foreground transition-colors"
+						>
 							Built with ❤️ for new parents
-						</p>
+						</button>
 					</motion.div>
 				)}
 			</AnimatePresence>
