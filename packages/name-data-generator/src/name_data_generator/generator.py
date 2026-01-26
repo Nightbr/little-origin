@@ -85,9 +85,11 @@ class DatasetGenerator:
 		- Names that are too short (< 3 chars)
 		- Names that are too long (> 20 chars)
 		- Initials (e.g., "A.J.", "J.R.", single letters)
-		- Abbreviations (e.g., "Jos.", "Wm.")
+		- Abbreviations (e.g., "Jos.", "Wm.", "Antho", "Clem")
 		- Names with numbers
 		- Names with suspicious patterns (all caps, multiple periods, etc.)
+		- Reduplicated nicknames (Titi, Momo, Boubou, etc.)
+		- Common words (Bonjour, Salut, Petit, etc.)
 
 		Args:
 			name: The name to validate
@@ -97,6 +99,7 @@ class DatasetGenerator:
 		"""
 		# Remove leading/trailing whitespace
 		name = name.strip()
+		name_lower = name.lower()
 
 		# Length checks
 		if len(name) < 3 or len(name) > 20:
@@ -132,7 +135,64 @@ class DatasetGenerator:
 			return False
 
 		# No suspicious pun patterns (all same character repeated)
-		if len(set(name.lower().replace('-', '').replace("'", ''))) <= 1:
+		if len(set(name_lower.replace('-', '').replace("'", ''))) <= 1:
+			return False
+
+		# Filter reduplicated nicknames (Titi, Momo, Boubou, etc.)
+		# Pattern: 2 syllables with same or similar sounds
+		if re.match(r'^(\w{1,3})\1+$', name_lower):
+			return False
+
+		# Specific reduplicated patterns
+		reduplicated = {
+			'titi', 'toto', 'momo', 'bobo', 'gigi', 'lolo', 'dodo',
+			'coco', 'jojo', 'doudou', 'boubou', 'moumoune', 'chou',
+			'nounou', 'loulou', 'fifi', 'riri', 'sisi', 'zizi',
+		}
+		if name_lower in reduplicated:
+			return False
+
+		# Filter common French/English words and greetings
+		common_words = {
+			'bonjour', 'salut', 'hello', 'petit', 'petite', 'grand',
+			'grande', 'monsieur', 'madame', 'mademoiselle', 'ami', 'amie',
+			'frere', 'soeur', 'fils', 'fille', 'garcon', 'fille',
+			'mr', 'mrs', 'ms', 'miss', 'dr', 'prof',
+		}
+		if name_lower in common_words:
+			return False
+
+		# Filter very short clipped abbreviations
+		# These are typically nicknames: Antho, Clem, Flo, Seb, Stef, Xav, etc.
+		clipped_abbreviations = {
+			'antho', 'clem', 'djo', 'flo', 'jerem', 'seb', 'stef', 'xav',
+			'ced', 'gigi', 'dodo', 'loul', 'nini', 'toutou', 'mouss',
+			'boba', 'kika', 'nana', 'baba', 'riri', 'fifi', 'sisi',
+		}
+		if name_lower in clipped_abbreviations:
+			return False
+
+		# Filter diminutives ending in -ou or -o (very short ones)
+		# These are typically affectionate nicknames: Boubou, Momo, Lolo, etc.
+		diminutives = {
+			'boubou', 'momo', 'lolo', 'djo', 'nino', 'toto', 'titi',
+			'coco', 'jojo', 'gigi', 'mouss', 'loulou', 'doudou',
+		}
+		if name_lower in diminutives:
+			return False
+
+		# Filter very short single-syllable nicknames (3-4 chars)
+		# Many of these are valid but also common nicknames
+		# Be more conservative - only filter the most obvious ones
+		obvious_nicknames = {
+			'ben', 'dan', 'dom', 'fab', 'gil', 'jack', 'jim', 'joe',
+			'jul', 'kev', 'mat', 'med', 'mick', 'mike', 'nico', 'phil',
+			'sam', 'stan', 'tom', 'ted', 'tim', 'bob', 'max', 'totof', 
+			'papi', 'doudou', 'loulou', 'coco', 'mimi', 'gigi', 'bibi', 
+			'titi', 'toto', 'lolo', 'nini', 'momo', 'bobo', 'kiki', 'fifi', 
+			'sisi', 'zizi', 'riri', 'jaja', 'mama', 'papa', 'dodo', 'lili',
+		}
+		if name_lower in obvious_nicknames:
 			return False
 
 		return True

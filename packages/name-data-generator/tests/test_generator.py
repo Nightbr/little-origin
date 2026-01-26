@@ -160,6 +160,97 @@ class TestIsValidFirstName:
 		assert DatasetGenerator.is_valid_first_name('Jean--Claude') is False
 		assert DatasetGenerator.is_valid_first_name("O''Malley") is False
 
+	def test_reduplicated_nicknames(self) -> None:
+		"""Test that reduplicated nicknames are filtered out."""
+		# French reduplicated nicknames
+		assert DatasetGenerator.is_valid_first_name('Titi') is False
+		assert DatasetGenerator.is_valid_first_name('Toto') is False
+		assert DatasetGenerator.is_valid_first_name('Momo') is False
+		assert DatasetGenerator.is_valid_first_name('Gigi') is False
+		assert DatasetGenerator.is_valid_first_name('Lolo') is False
+		assert DatasetGenerator.is_valid_first_name('Coco') is False
+		assert DatasetGenerator.is_valid_first_name('Jojo') is False
+		assert DatasetGenerator.is_valid_first_name('Doudou') is False
+		assert DatasetGenerator.is_valid_first_name('Boubou') is False
+		assert DatasetGenerator.is_valid_first_name('Loulou') is False
+		assert DatasetGenerator.is_valid_first_name('Fifi') is False
+		assert DatasetGenerator.is_valid_first_name('Riri') is False
+		assert DatasetGenerator.is_valid_first_name('Sisi') is False
+
+	def test_common_words(self) -> None:
+		"""Test that common words and greetings are filtered out."""
+		# French greetings
+		assert DatasetGenerator.is_valid_first_name('Bonjour') is False
+		assert DatasetGenerator.is_valid_first_name('Salut') is False
+		assert DatasetGenerator.is_valid_first_name('Hello') is False
+
+		# Common adjectives/nouns
+		assert DatasetGenerator.is_valid_first_name('Petit') is False
+		assert DatasetGenerator.is_valid_first_name('Petite') is False
+		assert DatasetGenerator.is_valid_first_name('Grand') is False
+		assert DatasetGenerator.is_valid_first_name('Grande') is False
+
+		# Titles
+		assert DatasetGenerator.is_valid_first_name('Monsieur') is False
+		assert DatasetGenerator.is_valid_first_name('Madame') is False
+		assert DatasetGenerator.is_valid_first_name('Mademoiselle') is False
+
+	def test_clipped_abbreviations(self) -> None:
+		"""Test that clipped abbreviations are filtered out."""
+		# French clipped names
+		assert DatasetGenerator.is_valid_first_name('Antho') is False
+		assert DatasetGenerator.is_valid_first_name('Clem') is False
+		assert DatasetGenerator.is_valid_first_name('Jerem') is False
+		assert DatasetGenerator.is_valid_first_name('Seb') is False
+		assert DatasetGenerator.is_valid_first_name('Stef') is False
+		assert DatasetGenerator.is_valid_first_name('Xav') is False
+		assert DatasetGenerator.is_valid_first_name('Ced') is False
+		assert DatasetGenerator.is_valid_first_name('Djo') is False
+		assert DatasetGenerator.is_valid_first_name('Gigi') is False
+		assert DatasetGenerator.is_valid_first_name('Loul') is False
+
+	def test_diminutives_ending_in_ou_or_o(self) -> None:
+		"""Test that diminutives ending in -ou or -o are filtered out."""
+		assert DatasetGenerator.is_valid_first_name('Boubou') is False
+		assert DatasetGenerator.is_valid_first_name('Momo') is False
+		assert DatasetGenerator.is_valid_first_name('Mouss') is False
+		assert DatasetGenerator.is_valid_first_name('Lolo') is False
+		assert DatasetGenerator.is_valid_first_name('Nino') is False
+		assert DatasetGenerator.is_valid_first_name('Toto') is False
+		assert DatasetGenerator.is_valid_first_name('Coco') is False
+		assert DatasetGenerator.is_valid_first_name('Jojo') is False
+
+	def test_short_nicknames(self) -> None:
+		"""Test that very short common nicknames are filtered out."""
+		assert DatasetGenerator.is_valid_first_name('Ben') is False
+		assert DatasetGenerator.is_valid_first_name('Dan') is False
+		assert DatasetGenerator.is_valid_first_name('Dom') is False
+		assert DatasetGenerator.is_valid_first_name('Fab') is False
+		assert DatasetGenerator.is_valid_first_name('Gil') is False
+		assert DatasetGenerator.is_valid_first_name('Jack') is False
+		assert DatasetGenerator.is_valid_first_name('Jim') is False
+		assert DatasetGenerator.is_valid_first_name('Joe') is False
+		assert DatasetGenerator.is_valid_first_name('Jul') is False
+		assert DatasetGenerator.is_valid_first_name('Kev') is False
+		assert DatasetGenerator.is_valid_first_name('Mat') is False
+		assert DatasetGenerator.is_valid_first_name('Med') is False
+		assert DatasetGenerator.is_valid_first_name('Mick') is False
+		assert DatasetGenerator.is_valid_first_name('Mike') is False
+		assert DatasetGenerator.is_valid_first_name('Nico') is False
+		assert DatasetGenerator.is_valid_first_name('Phil') is False
+		assert DatasetGenerator.is_valid_first_name('Sam') is False
+		assert DatasetGenerator.is_valid_first_name('Stan') is False
+		assert DatasetGenerator.is_valid_first_name('Tom') is False
+		assert DatasetGenerator.is_valid_first_name('Ted') is False
+		assert DatasetGenerator.is_valid_first_name('Tim') is False
+		assert DatasetGenerator.is_valid_first_name('Bob') is False
+		assert DatasetGenerator.is_valid_first_name('Max') is False
+
+		# Valid short names that should pass
+		assert DatasetGenerator.is_valid_first_name('Leo') is True
+		assert DatasetGenerator.is_valid_first_name('Amy') is True
+		assert DatasetGenerator.is_valid_first_name('Eli') is True
+
 
 class TestCleanNames:
 	"""Test the clean_names method."""
