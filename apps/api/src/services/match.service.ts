@@ -86,6 +86,26 @@ class MatchService {
 	async getAllMatches() {
 		return db.select().from(matches).orderBy(desc(matches.matchedAt));
 	}
+
+	async recalculateAllMatches(): Promise<void> {
+		// Get all current matches
+		const currentMatches = await db.select().from(matches);
+
+		// Check each match against threshold
+		for (const match of currentMatches) {
+			const result = await db
+				.select({ count: count() })
+				.from(reviews)
+				.where(and(eq(reviews.nameId, match.nameId), eq(reviews.isLiked, true)));
+
+			const likesCount = result[0].count;
+
+			// Delete match if below threshold
+			if (likesCount < this.MATCH_THRESHOLD) {
+				await db.delete(matches).where(eq(matches.id, match.id));
+			}
+		}
+	}
 }
 
 export const matchService = new MatchService();

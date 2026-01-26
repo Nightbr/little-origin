@@ -86,6 +86,23 @@ class AuthService {
 		const accessToken = generateAccessToken(user.id);
 		return { user, accessToken };
 	}
+
+	async deleteUser(userId: number, _requestingUserId: number): Promise<void> {
+		// Prevent deleting last user
+		const userCount = await db.select({ count: count() }).from(users);
+		if (userCount[0].count <= 1) {
+			throw new Error('Cannot delete the last user');
+		}
+
+		// Verify user exists
+		const [userToDelete] = await db.select().from(users).where(eq(users.id, userId));
+		if (!userToDelete) {
+			throw new Error('User not found');
+		}
+
+		// Delete user (reviews cascade automatically via schema)
+		await db.delete(users).where(eq(users.id, userId));
+	}
 }
 
 export const authService = new AuthService();

@@ -1,7 +1,9 @@
-import { ALL_USERS_QUERY, REGISTER_MUTATION } from '@/graphql/operations';
+import { DeleteUserDialog } from '@/components/lists/DeleteUserDialog';
+import { ALL_USERS_QUERY, DELETE_USER_MUTATION, REGISTER_MUTATION } from '@/graphql/operations';
+import { useAuth } from '@/hooks/useAuth';
 import { useMutation, useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { Check, User, UserPlus, Users } from 'lucide-react';
+import { Check, Trash2, User, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 
 interface UserData {
@@ -25,7 +27,12 @@ function AddUserView() {
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
 	const [registerMutation] = useMutation(REGISTER_MUTATION);
+	const [deleteUserMutation] = useMutation(DELETE_USER_MUTATION, {
+		refetchQueries: [{ query: ALL_USERS_QUERY }],
+	});
+	const { user: currentUser, logout } = useAuth();
 	const { data: usersData, refetch: refetchUsers } = useQuery<{ allUsers: UserData[] }>(
 		ALL_USERS_QUERY,
 	);
@@ -50,12 +57,43 @@ function AddUserView() {
 		}
 	};
 
+	const handleDeleteClick = (userId: string) => {
+		setDeleteUserId(userId);
+	};
+
+	const handleDeleteConfirm = async () => {
+		if (!deleteUserId) return;
+
+		const isCurrentUser = currentUser?.id === deleteUserId;
+
+		try {
+			await deleteUserMutation({ variables: { userId: deleteUserId } });
+
+			if (isCurrentUser) {
+				// Log out the deleted user
+				await logout();
+			} else {
+				await refetchUsers();
+			}
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : 'Failed to delete user';
+			setError(message);
+		} finally {
+			setDeleteUserId(null);
+		}
+	};
+
+	const handleDeleteCancel = () => {
+		setDeleteUserId(null);
+	};
+
 	const users = usersData?.allUsers ?? [];
+	const userToDelete = users.find((u) => u.id === deleteUserId);
 
 	return (
 		<div className="p-8 max-w-lg mx-auto w-full">
 			<header className="mb-8">
-				<h1 className="text-4xl font-heading text-primary mb-2">Add Family Member</h1>
+				<h1 className="text-4xl font-heading text-primary mb-2">Family Members</h1>
 				<p className="text-muted-foreground">Add another person to help choose your baby's name.</p>
 			</header>
 
@@ -64,16 +102,25 @@ function AddUserView() {
 				<div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-nurture border border-border/50 mb-6">
 					<div className="flex items-center gap-2 mb-4">
 						<Users size={20} className="text-primary" />
-						<h2 className="text-lg font-heading text-charcoal">Family Members</h2>
+						<h2 className="text-lg font-heading text-charcoal">Existing Members</h2>
 					</div>
 					<div className="flex flex-wrap gap-2">
 						{users.map((user) => (
 							<div
 								key={user.id}
-								className="flex items-center gap-2 px-4 py-2 bg-sage-green/20 rounded-full text-sage-green font-medium"
+								className="flex items-center gap-2 px-4 py-2 bg-sage-green/20 rounded-full text-sage-green font-medium group relative"
 							>
 								<User size={16} />
 								{user.username}
+								<button
+									type="button"
+									onClick={() => handleDeleteClick(user.id)}
+									disabled={users.length === 1}
+									className="ml-1 p-1 hover:bg-destructive/20 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+									aria-label={`Delete ${user.username}`}
+								>
+									<Trash2 size={14} className="text-sage-green/70 hover:text-destructive" />
+								</button>
 							</div>
 						))}
 					</div>
@@ -141,6 +188,16 @@ function AddUserView() {
 					</form>
 				)}
 			</div>
+
+			{userToDelete && (
+				<DeleteUserDialog
+					isOpen={!!deleteUserId}
+					onClose={handleDeleteCancel}
+					onConfirm={handleDeleteConfirm}
+					username={userToDelete.username}
+					isCurrentUser={currentUser?.id === deleteUserId}
+				/>
+			)}
 		</div>
 	);
 }

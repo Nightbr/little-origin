@@ -23,7 +23,7 @@ const baseMenuItems = [
 	{ label: 'Disliked Names', icon: HeartOff, to: '/dislikes' },
 	{ label: 'Matches', icon: Users, to: '/matches' },
 	{ label: 'Preferences', icon: Settings, to: '/preferences' },
-	{ label: 'Add User', icon: UserPlus, to: '/add-user' },
+	{ label: 'Add Member', icon: UserPlus, to: '/add-user' },
 ];
 
 const advancedMenuItem = { label: 'Advanced', icon: Zap, to: '/advanced' };

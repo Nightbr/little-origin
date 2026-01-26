@@ -119,12 +119,14 @@ export function NameCard({ id, name, gender, originCountry, isLiked, familyName 
 					</div>
 				) : (
 					<>
-						<div className="flex items-center justify-between mb-2">
-							<h3 className={`text-2xl font-heading ${textColorClass}`}>
+						<div className="flex items-start justify-between gap-2 mb-2">
+							<h3 className={`text-2xl font-heading ${textColorClass} flex-1`}>
 								{name}
 								{familyName && <span className={`${textColorSub} ml-1`}> {familyName}</span>}
 							</h3>
-							<GenderBadge gender={gender} size="md" muted={!isLiked} />
+							<div className="flex-shrink-0">
+								<GenderBadge gender={gender} size="md" muted={!isLiked} />
+							</div>
 						</div>
 						<p className="text-muted-foreground text-sm">{originCountry}</p>
 					</>

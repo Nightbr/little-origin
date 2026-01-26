@@ -44,6 +44,9 @@ const sqlite = new Database(dbPath);
 // Enable WAL mode for better concurrent read/write access
 sqlite.pragma('journal_mode = WAL');
 
+// Enable foreign key constraints for cascade deletes
+sqlite.pragma('foreign_keys = ON');
+
 // Slow query logging configuration
 const SLOW_QUERY_THRESHOLD = 50; // ms
 

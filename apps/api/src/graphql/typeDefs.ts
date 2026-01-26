@@ -143,6 +143,7 @@ export const typeDefs = `#graphql
     reviewName(nameId: ID!, isLiked: Boolean!): Review!
     undoLastReview: Review
     updatePreferences(input: UpdatePreferencesInput!): UserPreferences!
+    deleteUser(userId: ID!): Boolean!
     # Onboarding mutations (no auth required)
     addOnboardingUser(username: String!, password: String!): OnboardingUser!
     saveOnboardingPreferences(input: UpdatePreferencesInput!): UserPreferences!

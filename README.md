@@ -51,7 +51,9 @@ The Best Way to Choose Your Baby's Name.
    pnpm run dev
    ```
 
-   - **Web**: http://localhost:5173
+   The first run will automatically build all packages before starting the dev servers.
+
+   - **Web**: http://localhost:3001
    - **API**: http://localhost:3000/graphql
 
 ## 🛠 Tech Stack

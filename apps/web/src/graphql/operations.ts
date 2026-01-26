@@ -71,6 +71,12 @@ export const REFRESH_TOKEN_MUTATION = gql`
   }
 `;
 
+export const DELETE_USER_MUTATION = gql`
+  mutation DeleteUser($userId: ID!) {
+    deleteUser(userId: $userId)
+  }
+`;
+
 export const REVIEW_NAME_MUTATION = gql`
   mutation ReviewName($nameId: ID!, $isLiked: Boolean!) {
     reviewName(nameId: $nameId, isLiked: $isLiked) {
