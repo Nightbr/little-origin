@@ -1,6 +1,6 @@
 import { type User, matches, names, preferences, reviews, users } from '@little-origin/core';
 import { eq } from 'drizzle-orm';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
 import { runMigrations } from '../db/migrate';
 import { authService } from './auth.service';
@@ -12,10 +12,24 @@ describe('AuthService Integration Tests', () => {
 	let testUser3: User;
 	let testNames: Array<typeof names.$inferSelect>;
 
-	beforeAll(async () => {
+	beforeEach(async () => {
 		await runMigrations();
 
-		// Clean up any existing test users
+		// Ensure we have a preference record
+		const existingPref = await db.select().from(preferences).where(eq(preferences.id, 1)).limit(1);
+		if (existingPref.length === 0) {
+			await db.insert(preferences).values({
+				id: 1,
+				countryOrigins: ['US'],
+				genderPreference: 'both',
+				maxCharacters: 20,
+			});
+		}
+
+		// Clean up any existing test data
+		await db.delete(matches);
+		await db.delete(reviews);
+		await db.delete(names);
 		await db.delete(users).where(eq(users.username, 'authtestuser1'));
 		await db.delete(users).where(eq(users.username, 'authtestuser2'));
 		await db.delete(users).where(eq(users.username, 'authtestuser3'));
@@ -39,24 +53,6 @@ describe('AuthService Integration Tests', () => {
 			.returning();
 		testUser3 = user3;
 
-		// Ensure we have a preference record
-		const existingPref = await db.select().from(preferences).where(eq(preferences.id, 1)).limit(1);
-		if (existingPref.length === 0) {
-			await db.insert(preferences).values({
-				id: 1,
-				countryOrigins: ['US'],
-				genderPreference: 'both',
-				maxCharacters: 20,
-			});
-		}
-	});
-
-	beforeEach(async () => {
-		// Clean up in order: matches (depends on reviews), reviews, names
-		await db.delete(matches);
-		await db.delete(reviews);
-		await db.delete(names);
-
 		// Insert test names
 		testNames = await db
 			.insert(names)
@@ -64,6 +60,7 @@ describe('AuthService Integration Tests', () => {
 				{ name: 'Alice', gender: 'female', originCountry: 'FR', source: 'static' },
 				{ name: 'Bob', gender: 'male', originCountry: 'US', source: 'static' },
 				{ name: 'Charlie', gender: 'male', originCountry: 'US', source: 'static' },
+				{ name: 'Diana', gender: 'female', originCountry: 'UK', source: 'static' },
 			])
 			.returning();
 	});
@@ -95,21 +92,9 @@ describe('AuthService Integration Tests', () => {
 		});
 
 		it('should throw error when trying to delete the last user', async () => {
-			// Get current user count
-			const _userCount = await db.select({ count: users.id }).from(users);
-
-			// Delete all but one user
-			for (const user of [testUser2, testUser3]) {
-				try {
-					await db.delete(users).where(eq(users.id, user.id));
-				} catch {
-					// Ignore if already deleted
-				}
-			}
-
-			// Verify we have only 1 user
-			const [countResult] = await db.select({ count: users.id }).from(users);
-			expect(countResult.count).toBe(1);
+			// Delete users 2 and 3
+			await db.delete(users).where(eq(users.id, testUser2.id));
+			await db.delete(users).where(eq(users.id, testUser3.id));
 
 			// Try to delete the last user - should throw error
 			await expect(authService.deleteUser(testUser1.id, testUser1.id)).rejects.toThrow(
@@ -136,14 +121,15 @@ describe('AuthService Integration Tests', () => {
 	});
 
 	describe('deleteUser with matches', () => {
-		beforeEach(async () => {
+		it('should delete user when they have reviews that created matches', async () => {
+			// Clean up any existing reviews first
+			await db.delete(reviews);
+
 			// Create reviews for all 3 users on the same name
 			await reviewService.reviewName(testUser1.id, testNames[0].id, true);
 			await reviewService.reviewName(testUser2.id, testNames[0].id, true);
 			await reviewService.reviewName(testUser3.id, testNames[0].id, true);
-		});
 
-		it('should delete user when they have reviews that created matches', async () => {
 			// Verify match exists with 3 likes
 			const [matchBefore] = await db
 				.select()
@@ -161,22 +147,31 @@ describe('AuthService Integration Tests', () => {
 		});
 
 		it('should cascade delete reviews from deleted user', async () => {
-			// Count reviews before deletion
-			const [reviewsCountBefore] = await db
-				.select({ count: reviews.id })
+			// Clean up ALL existing data first
+			await db.delete(matches);
+			await db.delete(reviews);
+
+			// Create reviews for all 3 users on the same name
+			await reviewService.reviewName(testUser1.id, testNames[0].id, true);
+			await reviewService.reviewName(testUser2.id, testNames[0].id, true);
+			await reviewService.reviewName(testUser3.id, testNames[0].id, true);
+
+			// Verify review exists for testUser3
+			const reviewsBefore = await db
+				.select()
 				.from(reviews)
 				.where(eq(reviews.userId, testUser3.id));
-			expect(reviewsCountBefore.count).toBe(1);
+			expect(reviewsBefore.length).toBeGreaterThan(0);
 
 			// Delete user
 			await authService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify review is deleted
-			const [reviewsCountAfter] = await db
-				.select({ count: reviews.id })
+			const reviewsAfter = await db
+				.select()
 				.from(reviews)
 				.where(eq(reviews.userId, testUser3.id));
-			expect(reviewsCountAfter.count).toBe(0);
+			expect(reviewsAfter.length).toBe(0);
 		});
 	});
 });

@@ -1,6 +1,6 @@
 import { type User, matches, names, preferences, reviews, users } from '@little-origin/core';
 import { eq } from 'drizzle-orm';
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
 import { runMigrations } from '../db/migrate';
 import { matchService } from './match.service';
@@ -12,10 +12,24 @@ describe('MatchService Integration Tests', () => {
 	let testUser3: User;
 	let testNames: Array<typeof names.$inferSelect>;
 
-	beforeAll(async () => {
+	beforeEach(async () => {
 		await runMigrations();
 
-		// Clean up any existing test users
+		// Ensure we have a preference record
+		const existingPref = await db.select().from(preferences).where(eq(preferences.id, 1)).limit(1);
+		if (existingPref.length === 0) {
+			await db.insert(preferences).values({
+				id: 1,
+				countryOrigins: ['US'],
+				genderPreference: 'both',
+				maxCharacters: 20,
+			});
+		}
+
+		// Clean up any existing test data
+		await db.delete(matches);
+		await db.delete(reviews);
+		await db.delete(names);
 		await db.delete(users).where(eq(users.username, 'matchtestuser1'));
 		await db.delete(users).where(eq(users.username, 'matchtestuser2'));
 		await db.delete(users).where(eq(users.username, 'matchtestuser3'));
@@ -38,24 +52,6 @@ describe('MatchService Integration Tests', () => {
 			.values({ username: 'matchtestuser3', passwordHash: 'hash3' })
 			.returning();
 		testUser3 = user3;
-
-		// Ensure we have a preference record
-		const existingPref = await db.select().from(preferences).where(eq(preferences.id, 1)).limit(1);
-		if (existingPref.length === 0) {
-			await db.insert(preferences).values({
-				id: 1,
-				countryOrigins: ['US'],
-				genderPreference: 'both',
-				maxCharacters: 20,
-			});
-		}
-	});
-
-	beforeEach(async () => {
-		// Clean up in order: matches (depends on reviews), reviews, names
-		await db.delete(matches);
-		await db.delete(reviews);
-		await db.delete(names);
 
 		// Insert test names
 		testNames = await db
