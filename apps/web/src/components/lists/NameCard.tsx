@@ -72,8 +72,8 @@ export function NameCard({ id, name, gender, originCountry, isLiked, familyName 
 		setShowDialog(false);
 	};
 
-	const handleConfirm = () => {
-		reviewName({
+	const handleConfirm = async () => {
+		await reviewName({
 			variables: {
 				nameId: id,
 				isLiked: !isLiked,
@@ -140,6 +140,7 @@ export function NameCard({ id, name, gender, originCountry, isLiked, familyName 
 				name={name}
 				isLiked={isLiked}
 				familyName={familyName}
+				loading={isChanging}
 			/>
 		</>
 	);

@@ -32,12 +32,22 @@ Implement loading states for all GraphQL mutations and actions that are currentl
 - **Reference Pattern:** [preferences.tsx:171-201](apps/web/src/routes/preferences.tsx#L171-L201)
 
 ### 3. Onboarding "Next" Button (MEDIUM PRIORITY)
+
 - **Location:** [apps/web/src/components/onboarding/OnboardingWizard.tsx](apps/web/src/components/onboarding/OnboardingWizard.tsx#L153-L166)
 - **Issue:** Silent save when transitioning from Step 2 → Step 3, no loading feedback
 - **Impact:** Users may click multiple times thinking nothing happened
 - **Reference Pattern:** [add-user.tsx:123-140](apps/web/src/routes/add-user.tsx#L123-L140)
 
-### 4. Swipe Review Mutation (NO CHANGES - ALREADY OPTIMAL)
+### 4. DeleteUserDialog Confirm Button (MEDIUM PRIORITY)
+
+- **Location:** [apps/web/src/components/lists/DeleteUserDialog.tsx](apps/web/src/components/lists/DeleteUserDialog.tsx#L81-L87)
+- **Parent:** [apps/web/src/routes/add-user.tsx](apps/web/src/routes/add-user.tsx#L64-L84)
+- **Issue:** Delete button has no loading state when removing a user
+- **Impact:** Users may click multiple times, no feedback during network delay
+- **Related:** Parent component `handleDeleteConfirm` doesn't track loading state
+- **Reference Pattern:** ChangeDecisionDialog implementation (see Phase 2 below)
+
+### 5. Swipe Review Mutation (NO CHANGES - ALREADY OPTIMAL)
 - **Location:** [apps/web/src/components/swipe/SwipeView.tsx](apps/web/src/components/swipe/SwipeView.tsx#L162-L171)
 - **Current State:** Silent background mutation with optimistic UI
 - **Decision:** Keep current implementation - follows best practices for swipe interfaces
@@ -272,6 +282,112 @@ const goNext = async () => {
 
 ---
 
+### Phase 4: DeleteUserDialog
+
+#### File: `apps/web/src/components/lists/DeleteUserDialog.tsx`
+
+**Changes:**
+
+1. **Add loading prop to interface** (lines 3-10):
+
+```tsx
+interface DeleteUserDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    username: string;
+    isCurrentUser: boolean;
+    loading?: boolean;  // NEW
+}
+```
+
+2. **Update component to destructure loading** (line 11-18):
+
+```tsx
+export function DeleteUserDialog({
+    isOpen,
+    onClose,
+    onConfirm,
+    username,
+    isCurrentUser,
+    loading = false,  // NEW
+}: DeleteUserDialogProps) {
+```
+
+3. **Update Delete button to show loading state** (lines 81-87):
+
+```tsx
+<button
+    type="button"
+    onClick={onConfirm}
+    disabled={loading}
+    className="flex-1 px-6 py-3 rounded-xl bg-destructive text-white font-semibold hover:bg-destructive/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+>
+    {loading ? (
+        <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Deleting...
+        </>
+    ) : (
+        'Delete'
+    )}
+</button>
+```
+
+#### File: `apps/web/src/routes/add-user.tsx`
+
+**Changes:**
+
+1. **Add deleting state** (after line 30):
+
+```tsx
+const [deleting, setDeleting] = useState(false);
+```
+
+2. **Update handleDeleteConfirm to manage loading** (lines 64-84):
+
+```tsx
+const handleDeleteConfirm = async () => {
+    if (!deleteUserId) return;
+
+    const isCurrentUser = currentUser?.id === deleteUserId;
+    setDeleting(true);
+    setError('');
+
+    try {
+        await deleteUserMutation({ variables: { userId: deleteUserId } });
+
+        if (isCurrentUser) {
+            // Log out the deleted user
+            await logout();
+        } else {
+            await refetchUsers();
+        }
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Failed to delete user';
+        setError(message);
+    } finally {
+        setDeleting(false);
+        setDeleteUserId(null);
+    }
+};
+```
+
+3. **Update DeleteUserDialog usage** (lines 192-200):
+
+```tsx
+<DeleteUserDialog
+    isOpen={!!deleteUserId}
+    onClose={handleDeleteCancel}
+    onConfirm={handleDeleteConfirm}
+    username={userToDelete.username}
+    isCurrentUser={currentUser?.id === deleteUserId}
+    loading={deleting}  // NEW
+/>
+```
+
+---
+
 ## Design System Reference
 
 ### Spinner Component
@@ -350,6 +466,16 @@ className={`base-classes ${
   - Lines: ~36, ~93-99, ~153-166
   - Changes: Add savingPrefs state, update goNext, update Next button
 
+- **DeleteUserDialog Component:**
+  - `apps/web/src/components/lists/DeleteUserDialog.tsx`
+  - Lines: ~3-10, ~11-18, ~81-87
+  - Changes: Add loading prop, destructure loading, update Delete button
+
+- **Add User Route (for DeleteUserDialog):**
+  - `apps/web/src/routes/add-user.tsx`
+  - Lines: ~30, ~64-84, ~192-200
+  - Changes: Add deleting state, update handleDeleteConfirm, pass loading to dialog
+
 ### Reference Files (No Changes):
 
 - **UserStep** - Reference for button loading pattern
@@ -409,6 +535,16 @@ className={`base-classes ${
    - [ ] Verify no loading indicator appears
    - [ ] Verify next card appears smoothly
 
+5. **Delete User Dialog Flow:**
+   - [ ] Navigate to "Family Members" page (add-user route)
+   - [ ] Click the trash icon on a user
+   - [ ] Verify dialog appears with user details
+   - [ ] Click "Delete" in dialog
+   - [ ] Verify button shows spinner and "Deleting..." text
+   - [ ] Verify button is disabled during mutation
+   - [ ] Verify dialog closes and user is removed from list
+   - [ ] Test deleting current user - verify logout occurs
+
 ### Quality Checks
 
 ```bash
@@ -437,30 +573,48 @@ pnpm format
 ### Before
 
 **Login:**
+
 - User clicks "Sign In"
 - Nothing happens for 1-2 seconds
 - User may click again
 - Suddenly page redirects
 
 **Onboarding Step 2:**
+
 - User clicks "Next"
 - Nothing happens for 500ms
 - User may click multiple times
 - Suddenly page changes to step 3
 
+**Delete User:**
+
+- User clicks "Delete"
+- Nothing happens during network request
+- User may click multiple times
+- Suddenly user disappears or page changes
+
 ### After
 
 **Login:**
+
 - User clicks "Sign In"
 - Button immediately shows spinner + "Signing in..."
 - Button is disabled (prevents double-click)
 - Page redirects when complete
 
 **Onboarding Step 2:**
+
 - User clicks "Next"
 - Button immediately shows spinner + "Saving..."
 - Button is disabled (prevents double-click)
 - Navigation happens only after save completes
+
+**Delete User:**
+
+- User clicks "Delete"
+- Button immediately shows spinner + "Deleting..."
+- Button is disabled (prevents double-click)
+- Dialog closes and user is removed when complete
 
 ---
 
@@ -477,10 +631,10 @@ pnpm format
 
 ## Summary
 
-**Estimated Implementation Time:** 45-60 minutes
+**Estimated Implementation Time:** 60-75 minutes
 **Risk Level:** Low - isolated changes, following existing patterns
 **User Impact:** High - prevents confusion, improves perceived performance
-**Lines of Code:** ~50 lines across 4 files
+**Lines of Code:** ~70 lines across 6 files
 **New Components:** 0 (follows existing patterns)
 
-This plan implements loading states for the 3 identified missing actions (Login, ChangeDecisionDialog, and Onboarding) while maintaining the existing design system and following established patterns. The swipe action is intentionally left unchanged as it already implements optimal optimistic UI patterns.
+This plan implements loading states for the 4 identified missing actions (Login, ChangeDecisionDialog, Onboarding, and DeleteUserDialog) while maintaining the existing design system and following established patterns. The swipe action is intentionally left unchanged as it already implements optimal optimistic UI patterns.

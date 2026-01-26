@@ -27,6 +27,7 @@ function AddUserView() {
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 	const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
 	const [registerMutation] = useMutation(REGISTER_MUTATION);
 	const [deleteUserMutation] = useMutation(DELETE_USER_MUTATION, {
@@ -65,6 +66,8 @@ function AddUserView() {
 		if (!deleteUserId) return;
 
 		const isCurrentUser = currentUser?.id === deleteUserId;
+		setDeleting(true);
+		setError('');
 
 		try {
 			await deleteUserMutation({ variables: { userId: deleteUserId } });
@@ -79,6 +82,7 @@ function AddUserView() {
 			const message = err instanceof Error ? err.message : 'Failed to delete user';
 			setError(message);
 		} finally {
+			setDeleting(false);
 			setDeleteUserId(null);
 		}
 	};
@@ -196,6 +200,7 @@ function AddUserView() {
 					onConfirm={handleDeleteConfirm}
 					username={userToDelete.username}
 					isCurrentUser={currentUser?.id === deleteUserId}
+					loading={deleting}
 				/>
 			)}
 		</div>
