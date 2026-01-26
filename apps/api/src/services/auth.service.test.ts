@@ -157,20 +157,14 @@ describe('AuthService Integration Tests', () => {
 			await reviewService.reviewName(testUser3.id, testNames[0].id, true);
 
 			// Verify review exists for testUser3
-			const reviewsBefore = await db
-				.select()
-				.from(reviews)
-				.where(eq(reviews.userId, testUser3.id));
+			const reviewsBefore = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));
 			expect(reviewsBefore.length).toBeGreaterThan(0);
 
 			// Delete user
 			await authService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify review is deleted
-			const reviewsAfter = await db
-				.select()
-				.from(reviews)
-				.where(eq(reviews.userId, testUser3.id));
+			const reviewsAfter = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));
 			expect(reviewsAfter.length).toBe(0);
 		});
 	});
