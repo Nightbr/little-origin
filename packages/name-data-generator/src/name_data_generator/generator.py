@@ -4,6 +4,7 @@ Generate extended-dataset CSV files from names-dataset library.
 Uses get_top_names() to fetch top first names per gender per country.
 """
 
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,6 +44,8 @@ class GenerationStats:
 	total_names: int = 0
 	male_names: int = 0
 	female_names: int = 0
+	male_filtered: int = 0
+	female_filtered: int = 0
 
 
 class DatasetGenerator:
@@ -73,6 +76,146 @@ class DatasetGenerator:
 		self.nd = NameDataset()
 		self.console.print('[bold green]✓[/] names-dataset initialized')
 
+	@staticmethod
+	def is_valid_first_name(name: str) -> bool:
+		"""
+		Check if a name is a valid first name.
+
+		Filter out:
+		- Names that are too short (< 3 chars)
+		- Names that are too long (> 20 chars)
+		- Initials (e.g., "A.J.", "J.R.", single letters)
+		- Abbreviations (e.g., "Jos.", "Wm.")
+		- Names with numbers
+		- Names with suspicious patterns (all caps, multiple periods, etc.)
+
+		Args:
+			name: The name to validate
+
+		Returns:
+			True if the name is valid, False otherwise
+		"""
+		# Remove leading/trailing whitespace
+		name = name.strip()
+
+		# Length checks
+		if len(name) < 3 or len(name) > 20:
+			return False
+
+		# No numbers allowed
+		if re.search(r'\d', name):
+			return False
+
+		# No initials with periods (e.g., "A.J.", "J.R.")
+		if re.match(r'^[A-Z]\.?[A-Z]\.?', name):
+			return False
+
+		# No abbreviations ending with period (e.g., "Jos.", "Wm.")
+		if name.endswith('.'):
+			return False
+
+		# No all-caps names (likely abbreviations)
+		if name.isupper() and len(name) <= 4:
+			return False
+
+		# Must contain at least one letter (including Unicode)
+		if not re.search(r'\w', name, re.UNICODE):
+			return False
+
+		# Allow only letters (including Unicode), hyphens, and apostrophes
+		# Must start and end with a letter
+		if not re.match(r'^\w[\w\-\']*\w$', name, re.UNICODE):
+			return False
+
+		# No multiple consecutive hyphens or apostrophes
+		if '--' in name or "''" in name:
+			return False
+
+		# No suspicious pun patterns (all same character repeated)
+		if len(set(name.lower().replace('-', '').replace("'", ''))) <= 1:
+			return False
+
+		return True
+
+	@staticmethod
+	def clean_names(names: list[str], target_count: int) -> list[str]:
+		"""
+		Clean and filter a list of names to get valid first names.
+
+		Args:
+			names: List of candidate names (should be 15-20% more than target_count)
+			target_count: Desired number of valid names to return
+
+		Returns:
+			List of valid names (up to target_count)
+		"""
+		valid_names = [name for name in names if DatasetGenerator.is_valid_first_name(name)]
+
+		# Return only the requested amount
+		return valid_names[:target_count]
+
+	def fetch_names_until_sufficient(
+		self,
+		country: str,
+		gender: str,
+		target_count: int,
+		task: TaskID,
+	) -> tuple[list[str], int]:
+		"""
+		Fetch names from the dataset until we have enough valid names.
+
+		Keeps fetching in batches until we reach the target count or exhaust
+		available names.
+
+		Args:
+			country: Country code (e.g., 'US', 'DE')
+			gender: 'M' or 'F'
+			target_count: Desired number of valid names
+			task: Progress bar task ID
+
+		Returns:
+			Tuple of (valid_names, total_fetched)
+		"""
+		all_valid_names: list[str] = []
+		total_fetched = 0
+		batch_size = int(target_count * 1.2)  # Start with 20% buffer
+		max_iterations = 5  # Safety limit to prevent infinite loops
+
+		for iteration in range(max_iterations):
+			# Fetch a batch of names
+			result = self.nd.get_top_names(
+				n=batch_size,
+				use_first_names=True,
+				country_alpha2=country,
+				gender=gender,
+			)
+			batch = result.get(country, {}).get(gender, [])
+			total_fetched += len(batch)
+
+			# Filter valid names from this batch
+			valid_batch = [name for name in batch if self.is_valid_first_name(name)]
+			all_valid_names.extend(valid_batch)
+
+			# Update progress to show we're working
+			with self.progress_lock:
+				progress_pct = 25 + (25 * (iteration + 1) / max_iterations)
+				self.progress.update(
+					task,
+					completed=progress_pct,
+					description=f'[cyan]Fetching {country} {gender} names ({len(all_valid_names)}/{target_count})[/cyan]',
+				)
+
+			# Check if we have enough valid names
+			if len(all_valid_names) >= target_count:
+				break
+
+			# If we got fewer names than requested in this batch, we've exhausted the dataset
+			if len(batch) < batch_size:
+				break
+
+		# Return exactly target_count names
+		return all_valid_names[:target_count], total_fetched
+
 	def generate_country(self, country: str, task: TaskID) -> GenerationStats:
 		"""
 		Generate a single country's CSV file.
@@ -93,39 +236,43 @@ class DatasetGenerator:
 		# Create output directory if needed
 		output_file.parent.mkdir(parents=True, exist_ok=True)
 
-		# Get top first names for this country
-		names_per_gender = self.config.names_per_gender
+		target_count = self.config.names_per_gender
 
-		with self.progress_lock:
-			self.progress.update(task, description=f'[cyan]Fetching {country} names[/cyan]', completed=33)
-
-		# Fetch male names
-		male_result = self.nd.get_top_names(
-			n=names_per_gender,
-			use_first_names=True,
-			country_alpha2=country,
+		# Fetch male names (with automatic retry until we have enough)
+		male_names, male_total_fetched = self.fetch_names_until_sufficient(
+			country=country,
 			gender='M',
+			target_count=target_count,
+			task=task,
 		)
-		male_names = male_result.get(country, {}).get('M', [])
+		stats.male_filtered = male_total_fetched - len(male_names)
 
+		# Fetch female names (with automatic retry until we have enough)
 		with self.progress_lock:
-			self.progress.update(task, completed=66)
+			self.progress.update(
+				task,
+				description=f'[cyan]Fetching {country} F names[/cyan]',
+				completed=50,
+			)
 
-		# Fetch female names
-		female_result = self.nd.get_top_names(
-			n=names_per_gender,
-			use_first_names=True,
-			country_alpha2=country,
+		female_names, female_total_fetched = self.fetch_names_until_sufficient(
+			country=country,
 			gender='F',
+			target_count=target_count,
+			task=task,
 		)
-		female_names = female_result.get(country, {}).get('F', [])
+		stats.female_filtered = female_total_fetched - len(female_names)
 
 		stats.male_names = len(male_names)
 		stats.female_names = len(female_names)
 		stats.total_names = stats.male_names + stats.female_names
 
 		with self.progress_lock:
-			self.progress.update(task, completed=90)
+			self.progress.update(
+				task,
+				description=f'[cyan]Writing {country} names[/cyan]',
+				completed=90,
+			)
 
 		# Write to CSV
 		with open(output_file, 'w', encoding='utf-8', newline='') as outfile:
@@ -182,6 +329,7 @@ class DatasetGenerator:
 		summary_table.add_column('Male', justify='right', style='blue')
 		summary_table.add_column('Female', justify='right', style='magenta')
 		summary_table.add_column('Total', justify='right')
+		summary_table.add_column('Filtered', justify='right', style='yellow')
 
 		# Sort countries by original order
 		for country in self.config.countries:
@@ -189,11 +337,13 @@ class DatasetGenerator:
 			if not stats:
 				continue
 
+			total_filtered = stats.male_filtered + stats.female_filtered
 			summary_table.add_row(
 				country,
 				f'{stats.male_names:,}',
 				f'{stats.female_names:,}',
 				f'{stats.total_names:,}',
+				f'{total_filtered:,}' if total_filtered > 0 else '[dim]0[/dim]',
 			)
 
 		# Print final summary
