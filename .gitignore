@@ -50,4 +50,4 @@ packages/*/!.python-version
 .mise.local/
 
 # UV cache
-.uv-cache/
+.uv-cache/.mcp.json
