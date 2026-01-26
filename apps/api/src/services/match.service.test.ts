@@ -129,7 +129,7 @@ describe('MatchService Integration Tests', () => {
 			const [match] = await db.select().from(matches).where(eq(matches.nameId, testNames[0].id));
 			expect(match).toBeDefined();
 
-			const matchWithDetails = await matchService.getMatchWithDetails(match!.id);
+			const matchWithDetails = await matchService.getMatchWithDetails(match?.id);
 
 			expect(matchWithDetails).toBeDefined();
 			expect(matchWithDetails?.likedBy).toHaveLength(2);

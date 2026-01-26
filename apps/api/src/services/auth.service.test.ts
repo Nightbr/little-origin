@@ -83,26 +83,20 @@ describe('AuthService Integration Tests', () => {
 			await reviewService.reviewName(testUser3.id, testNames[1].id, false);
 
 			// Verify reviews exist
-			const reviewsBefore = await db
-				.select()
-				.from(reviews)
-				.where(eq(reviews.userId, testUser3.id));
+			const reviewsBefore = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));
 			expect(reviewsBefore).toHaveLength(2);
 
 			// Delete user
 			await authService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify reviews are cascade deleted
-			const reviewsAfter = await db
-				.select()
-				.from(reviews)
-				.where(eq(reviews.userId, testUser3.id));
+			const reviewsAfter = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));
 			expect(reviewsAfter).toHaveLength(0);
 		});
 
 		it('should throw error when trying to delete the last user', async () => {
 			// Get current user count
-			const userCount = await db.select({ count: users.id }).from(users);
+			const _userCount = await db.select({ count: users.id }).from(users);
 
 			// Delete all but one user
 			for (const user of [testUser2, testUser3]) {
@@ -126,9 +120,9 @@ describe('AuthService Integration Tests', () => {
 		it('should throw error when user does not exist', async () => {
 			const nonExistentUserId = 99999;
 
-			await expect(
-				authService.deleteUser(nonExistentUserId, testUser1.id),
-			).rejects.toThrow('User not found');
+			await expect(authService.deleteUser(nonExistentUserId, testUser1.id)).rejects.toThrow(
+				'User not found',
+			);
 		});
 
 		it('should allow deletion when there are multiple users', async () => {
@@ -137,9 +131,7 @@ describe('AuthService Integration Tests', () => {
 			expect(countBefore.count).toBeGreaterThanOrEqual(2);
 
 			// Should not throw
-			await expect(
-				authService.deleteUser(testUser3.id, testUser1.id),
-			).resolves.not.toThrow();
+			await expect(authService.deleteUser(testUser3.id, testUser1.id)).resolves.not.toThrow();
 		});
 	});
 
