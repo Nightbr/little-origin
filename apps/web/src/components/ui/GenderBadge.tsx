@@ -1,4 +1,3 @@
-import { BabyIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export type Gender = 'male' | 'female';
@@ -12,21 +11,20 @@ interface GenderBadgeProps {
 	className?: string;
 }
 
-const sizeClasses: Record<BadgeSize, { container: string; icon: number }> = {
-	sm: { container: 'px-2.5 py-0.5 text-[10px] gap-1', icon: 10 },
-	md: { container: 'px-3 py-1 text-xs gap-1.5', icon: 12 },
-	lg: { container: 'px-4 py-1.5 text-xs gap-2', icon: 14 },
+const sizeClasses: Record<BadgeSize, string> = {
+	sm: 'px-2.5 py-0.5 text-[10px]',
+	md: 'px-3 py-1 text-xs',
+	lg: 'px-4 py-1.5 text-xs',
 };
 
 export function GenderBadge({ gender, size = 'md', muted = false, className }: GenderBadgeProps) {
 	const isBoy = gender === 'male';
-	const sizeConfig = sizeClasses[size];
 
 	return (
 		<span
 			className={cn(
-				'rounded-full font-bold tracking-wider uppercase flex items-center text-gender-boy-foreground',
-				sizeConfig.container,
+				'rounded-full font-bold tracking-wider uppercase text-gender-boy-foreground',
+				sizeClasses[size],
 				isBoy
 					? muted
 						? 'bg-gender-boy/80'
@@ -37,7 +35,6 @@ export function GenderBadge({ gender, size = 'md', muted = false, className }: G
 				className,
 			)}
 		>
-			<BabyIcon size={sizeConfig.icon} />
 			{isBoy ? 'Boy' : 'Girl'}
 		</span>
 	);

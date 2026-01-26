@@ -102,7 +102,7 @@ function AddUserView() {
 				<div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-nurture border border-border/50 mb-6">
 					<div className="flex items-center gap-2 mb-4">
 						<Users size={20} className="text-primary" />
-						<h2 className="text-lg font-heading text-charcoal">Family Members</h2>
+						<h2 className="text-lg font-heading text-charcoal">Existing Members</h2>
 					</div>
 					<div className="flex flex-wrap gap-2">
 						{users.map((user) => (
