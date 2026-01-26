@@ -8,14 +8,21 @@ export function Login() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (!username || !password) return;
+
+		setLoading(true);
+		setError('');
 		try {
 			await login(username, password);
 			router.navigate({ to: '/' });
 		} catch (err: unknown) {
 			setError(err instanceof Error ? err.message : 'Login failed');
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -49,9 +56,19 @@ export function Login() {
 			{error && <p className="text-destructive text-sm">{error}</p>}
 			<button
 				type="submit"
-				className="w-full py-3 px-4 bg-primary text-white font-heading font-semibold rounded-xl hover:bg-primary/90 shadow-nurture transition-all transform active:scale-[0.98]"
+				disabled={loading || !username || !password}
+				className={`w-full py-3 px-4 bg-primary text-white font-heading font-semibold rounded-xl hover:bg-primary/90 shadow-nurture transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 ${
+					loading || !username || !password ? 'opacity-50 cursor-not-allowed' : ''
+				}`}
 			>
-				Sign In
+				{loading ? (
+					<>
+						<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+						Signing in...
+					</>
+				) : (
+					'Sign In'
+				)}
 			</button>
 		</form>
 	);

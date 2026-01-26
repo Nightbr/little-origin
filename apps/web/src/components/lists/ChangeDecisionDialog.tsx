@@ -7,6 +7,7 @@ interface ChangeDecisionDialogProps {
 	name: string;
 	isLiked: boolean;
 	familyName?: string;
+	loading?: boolean;
 }
 
 export function ChangeDecisionDialog({
@@ -16,6 +17,7 @@ export function ChangeDecisionDialog({
 	name,
 	isLiked,
 	familyName,
+	loading = false,
 }: ChangeDecisionDialogProps) {
 	const displayName = familyName ? `${name} ${familyName}` : name;
 	const targetList = isLiked ? 'Dislikes' : 'Likes';
@@ -78,9 +80,17 @@ export function ChangeDecisionDialog({
 					<button
 						type="button"
 						onClick={onConfirm}
-						className="flex-1 px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors"
+						disabled={loading}
+						className="flex-1 px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						Confirm
+						{loading ? (
+							<>
+								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+								Moving...
+							</>
+						) : (
+							'Confirm'
+						)}
 					</button>
 				</div>
 			</div>

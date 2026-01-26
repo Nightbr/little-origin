@@ -33,6 +33,7 @@ export function OnboardingWizard() {
 	});
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+	const [savingPrefs, setSavingPrefs] = useState(false);
 
 	const { refetch: refetchStatus } = useQuery(APP_STATUS_QUERY);
 	const [addUser] = useMutation(ADD_ONBOARDING_USER_MUTATION);
@@ -92,7 +93,9 @@ export function OnboardingWizard() {
 
 	const goNext = async () => {
 		if (step === 2) {
+			setSavingPrefs(true);
 			const saved = await handleSavePreferences();
+			setSavingPrefs(false);
 			if (!saved) return;
 		}
 		if (step < 3) setStep(step + 1);
@@ -154,15 +157,24 @@ export function OnboardingWizard() {
 						<button
 							type="button"
 							onClick={goNext}
-							disabled={!canProceed()}
+							disabled={!canProceed() || (step === 2 && savingPrefs)}
 							className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-								canProceed()
-									? 'bg-primary text-white hover:bg-primary/90 shadow-nurture'
-									: 'bg-muted text-muted-foreground cursor-not-allowed'
+								!canProceed() || (step === 2 && savingPrefs)
+									? 'bg-muted text-muted-foreground cursor-not-allowed'
+									: 'bg-primary text-white hover:bg-primary/90 shadow-nurture'
 							}`}
 						>
-							Next
-							<ChevronRight size={20} />
+							{step === 2 && savingPrefs ? (
+								<>
+									<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+									Saving...
+								</>
+							) : (
+								<>
+									Next
+									<ChevronRight size={20} />
+								</>
+							)}
 						</button>
 					) : null}
 				</div>
