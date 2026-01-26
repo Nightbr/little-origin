@@ -150,7 +150,7 @@ function CountryCard({ country, onStart, isAnyIngesting }: CountryCardProps) {
 						</p>
 					</div>
 				</div>
-				<StatusBadge status={status} />
+				{status !== 'ready' && <StatusBadge status={status} />}
 			</div>
 
 			{/* Progress Display */}
@@ -167,9 +167,6 @@ function CountryCard({ country, onStart, isAnyIngesting }: CountryCardProps) {
 								{progress.processedNames.toLocaleString()}
 							</span>{' '}
 							names processed
-						</div>
-						<div className="text-xs text-muted-foreground mt-1">
-							Batch {progress.currentBatch.toLocaleString()}
 						</div>
 					</motion.div>
 				</AnimatePresence>

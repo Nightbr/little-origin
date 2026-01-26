@@ -1,5 +1,5 @@
 import { SUPPORTED_COUNTRIES, names } from '@little-origin/core';
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { logger } from '../config/logger';
 import { db } from '../db/client';
 import { EVENTS, pubsub } from '../pubsub';
@@ -52,11 +52,11 @@ class IngestionService {
 		}>
 	> {
 		const statusPromises = SUPPORTED_COUNTRIES.map(async (country) => {
-			// Count names with 'extended' source for this country
+			// Count all names for this country (regardless of source)
 			const [countResult] = await db
 				.select({ count: sql<number>`count(*)` })
 				.from(names)
-				.where(and(eq(names.originCountry, country.code), eq(names.source, 'extended')));
+				.where(eq(names.originCountry, country.code));
 
 			const loadedCount = countResult?.count ?? 0;
 			const state = this.ingestionState.get(country.code);
