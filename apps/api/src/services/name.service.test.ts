@@ -1,4 +1,4 @@
-import { type User, names, matches, preferences, reviews, users } from '@little-origin/core';
+import { type User, matches, names, preferences, reviews, users } from '@little-origin/core';
 import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
@@ -225,12 +225,15 @@ describe('NameService Integration Tests', () => {
 		await db.delete(matches);
 
 		// Insert valid match and names
-		const [matchedName] = await db.insert(names).values({
-			name: 'Matched',
-			gender: 'female',
-			originCountry: 'FR',
-			source: 'extended',
-		}).returning();
+		const [matchedName] = await db
+			.insert(names)
+			.values({
+				name: 'Matched',
+				gender: 'female',
+				originCountry: 'FR',
+				source: 'extended',
+			})
+			.returning();
 
 		await db.insert(matches).values({
 			nameId: matchedName.id,
@@ -263,7 +266,7 @@ describe('NameService Integration Tests', () => {
 		// Check count
 		const afterCount = await db.select({ count: sql<number>`count(*)` }).from(names);
 		const remaining = await db.select().from(names);
-		const remainingNames = remaining.map(n => n.name);
+		const remainingNames = remaining.map((n) => n.name);
 
 		expect(deletedCount).toBe(1);
 		expect(afterCount[0].count).toBe(2);
@@ -279,12 +282,15 @@ describe('NameService Integration Tests', () => {
 		await db.delete(reviews);
 
 		// Insert extended name that is NOT matched but IS liked
-		const [likedName] = await db.insert(names).values({
-			name: 'LikedOnly',
-			gender: 'female',
-			originCountry: 'FR',
-			source: 'extended',
-		}).returning();
+		const [likedName] = await db
+			.insert(names)
+			.values({
+				name: 'LikedOnly',
+				gender: 'female',
+				originCountry: 'FR',
+				source: 'extended',
+			})
+			.returning();
 
 		await db.insert(reviews).values({
 			userId: testUser.id,
@@ -293,12 +299,15 @@ describe('NameService Integration Tests', () => {
 		});
 
 		// Insert extended name that is disliked (should be pruned)
-		const [dislikedName] = await db.insert(names).values({
-			name: 'DislikedName',
-			gender: 'male',
-			originCountry: 'ES',
-			source: 'extended',
-		}).returning();
+		const [dislikedName] = await db
+			.insert(names)
+			.values({
+				name: 'DislikedName',
+				gender: 'male',
+				originCountry: 'ES',
+				source: 'extended',
+			})
+			.returning();
 
 		await db.insert(reviews).values({
 			userId: testUser.id,
@@ -319,7 +328,7 @@ describe('NameService Integration Tests', () => {
 
 		// Check results
 		const remaining = await db.select().from(names);
-		const remainingNames = remaining.map(n => n.name);
+		const remainingNames = remaining.map((n) => n.name);
 
 		expect(deletedCount).toBe(2); // TotallyUnused and DislikedName
 		expect(remainingNames).toContain('LikedOnly');

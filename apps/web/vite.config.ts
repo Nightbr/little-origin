@@ -12,7 +12,7 @@ export default defineConfig({
 			name: 'sourcemap-exclude',
 			configureServer(server) {
 				server.middlewares.use((req, res, next) => {
-					if (req.url && req.url.endsWith('.map')) {
+					if (req.url?.endsWith('.map')) {
 						const url = req.url.split('?')[0];
 						const root = server.config.root;
 
