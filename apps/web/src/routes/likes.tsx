@@ -47,7 +47,13 @@ function LikesList() {
 		hasActiveFilters,
 		activeFilterCount,
 		clearFilters,
-	} = useListFilter({ items: names, getName, getGender, getCountry });
+	} = useListFilter({
+		items: names,
+		getName,
+		getGender,
+		getCountry,
+		storageKey: 'lo_liked_filters',
+	});
 
 	if (loading)
 		return (

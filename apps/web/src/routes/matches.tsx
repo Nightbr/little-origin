@@ -85,7 +85,13 @@ function MatchesList() {
 		hasActiveFilters,
 		activeFilterCount,
 		clearFilters,
-	} = useListFilter({ items: matches, getName, getGender, getCountry });
+	} = useListFilter({
+		items: matches,
+		getName,
+		getGender,
+		getCountry,
+		storageKey: 'lo_matches_filters',
+	});
 
 	if (loading)
 		return (

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
 	search: string;
@@ -17,6 +17,7 @@ interface UseListFilterOptions<T> {
 	getName: (item: T) => string;
 	getGender: (item: T) => string;
 	getCountry: (item: T) => string;
+	storageKey?: string;
 }
 
 export function useListFilter<T>({
@@ -24,8 +25,27 @@ export function useListFilter<T>({
 	getName,
 	getGender,
 	getCountry,
+	storageKey,
 }: UseListFilterOptions<T>) {
-	const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+	const [filters, setFilters] = useState<FilterState>(() => {
+		if (storageKey) {
+			const saved = localStorage.getItem(storageKey);
+			if (saved) {
+				try {
+					return JSON.parse(saved);
+				} catch (e) {
+					console.error('Failed to parse filters from localStorage', e);
+				}
+			}
+		}
+		return DEFAULT_FILTER_STATE;
+	});
+
+	useEffect(() => {
+		if (storageKey) {
+			localStorage.setItem(storageKey, JSON.stringify(filters));
+		}
+	}, [filters, storageKey]);
 
 	const filteredItems = useMemo(() => {
 		return items.filter((item) => {

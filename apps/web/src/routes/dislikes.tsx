@@ -47,7 +47,13 @@ function DislikesList() {
 		hasActiveFilters,
 		activeFilterCount,
 		clearFilters,
-	} = useListFilter({ items: names, getName, getGender, getCountry });
+	} = useListFilter({
+		items: names,
+		getName,
+		getGender,
+		getCountry,
+		storageKey: 'lo_disliked_filters',
+	});
 
 	if (loading)
 		return <div className="text-center py-20 animate-pulse text-sage-green">Loading...</div>;
