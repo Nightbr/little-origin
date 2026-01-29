@@ -252,6 +252,15 @@ class DatasetGenerator:
 
 		return True
 
+	@staticmethod
+	def clean_names(names: list[str], target_count: int) -> list[str]:
+		"""
+		Filter a list of names to get only valid ones, up to target_count.
+		This is primarily used for testing and basic regex-only cleaning.
+		"""
+		valid_names = [name for name in names if DatasetGenerator.is_valid_first_name(name)]
+		return valid_names[:target_count]
+
 	def clean_batch_with_ai(self, names: list[str]) -> list[str]:
 		"""
 		Clean a batch of names using OpenRouter AI.

@@ -3,12 +3,12 @@ import {
 	NAME_INGESTION_PROGRESS_SUBSCRIPTION,
 	START_INGESTION_MUTATION,
 } from '@/graphql/operations';
+import { PRUNE_EXTENDED_NAMES_MUTATION } from '@/graphql/operations';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { PRUNE_EXTENDED_NAMES_MUTATION } from '@/graphql/operations';
 
 const COUNTRY_FLAGS: Record<string, string> = {
 	US: '🇺🇸',
@@ -268,10 +268,8 @@ function StatusBadge({ status }: StatusBadgeProps) {
 	);
 }
 
-interface PruneDatabaseProps {}
-
-function PruneDatabase({}: PruneDatabaseProps) {
-	const [pruneExtendedNames, { loading, data }] = useMutation(PRUNE_EXTENDED_NAMES_MUTATION);
+function PruneDatabase() {
+	const [pruneExtendedNames, { loading }] = useMutation(PRUNE_EXTENDED_NAMES_MUTATION);
 	const [confirming, setConfirming] = useState(false);
 	const [deletedCount, setDeletedCount] = useState<number | null>(null);
 
@@ -285,7 +283,7 @@ function PruneDatabase({}: PruneDatabaseProps) {
 			const result = await pruneExtendedNames();
 			setDeletedCount(result.data?.pruneExtendedNames ?? 0);
 			setConfirming(false);
-			
+
 			// Reset success message after 5 seconds
 			setTimeout(() => setDeletedCount(null), 5000);
 		} catch (error) {
@@ -299,8 +297,9 @@ function PruneDatabase({}: PruneDatabaseProps) {
 				<div>
 					<h2 className="text-2xl font-heading text-charcoal mb-2">Prune Database</h2>
 					<p className="text-muted-foreground max-w-xl">
-						Remove imported names that haven't been liked or matched by any user. This cleans up the database
-						by deleting unused "extended" source names, while protecting liked names, matches, and static data.
+						Remove imported names that haven't been liked or matched by any user. This cleans up the
+						database by deleting unused "extended" source names, while protecting liked names,
+						matches, and static data.
 					</p>
 				</div>
 			</div>
@@ -312,9 +311,7 @@ function PruneDatabase({}: PruneDatabaseProps) {
 					</div>
 					<div>
 						<h3 className="text-lg font-semibold text-charcoal">Clean Unused Names</h3>
-						<p className="text-sm text-muted-foreground">
-							This action cannot be undone.
-						</p>
+						<p className="text-sm text-muted-foreground">This action cannot be undone.</p>
 					</div>
 				</div>
 
@@ -324,16 +321,18 @@ function PruneDatabase({}: PruneDatabaseProps) {
 							Successfully removed {deletedCount.toLocaleString()} names
 						</span>
 					)}
-					
+
 					{confirming ? (
 						<div className="flex gap-2 animate-in fade-in zoom-in-95">
 							<button
+								type="button"
 								onClick={() => setConfirming(false)}
 								className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-black/5"
 							>
 								Cancel
 							</button>
 							<button
+								type="button"
 								onClick={handlePrune}
 								disabled={loading}
 								className="px-4 py-2 rounded-xl bg-destructive text-white font-medium hover:bg-destructive/90 flex items-center gap-2"
@@ -344,6 +343,7 @@ function PruneDatabase({}: PruneDatabaseProps) {
 						</div>
 					) : (
 						<button
+							type="button"
 							onClick={() => setConfirming(true)}
 							className="px-6 py-3 rounded-xl border border-destructive/20 text-destructive font-semibold hover:bg-destructive/5 active:scale-95 transition-all"
 						>
