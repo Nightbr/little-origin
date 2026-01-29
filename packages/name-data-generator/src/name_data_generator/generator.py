@@ -5,8 +5,12 @@ Uses get_top_names() to fetch top first names per gender per country.
 """
 
 import re
+import json
+import os
+import logging
+import httpx
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 
@@ -35,17 +39,27 @@ class GeneratorConfig:
 	output_dir: Path
 	countries: list[str]
 	names_per_gender: int = DEFAULT_NAMES_PER_GENDER
+	use_ai: bool = False
+	ai_api_key: str | None = None
+	ai_model: str = 'google/gemini-2.0-flash-001'
 
 
 @dataclass
 class GenerationStats:
 	"""Statistics for name generation."""
-
+	
 	total_names: int = 0
 	male_names: int = 0
 	female_names: int = 0
-	male_filtered: int = 0
-	female_filtered: int = 0
+	
+	male_fetched: int = 0
+	female_fetched: int = 0
+	
+	male_regex_filtered: int = 0
+	female_regex_filtered: int = 0
+	
+	male_ai_filtered: int = 0
+	female_ai_filtered: int = 0
 
 
 class DatasetGenerator:
@@ -54,11 +68,13 @@ class DatasetGenerator:
 	def __init__(self, config: GeneratorConfig, max_workers: int = 4):
 		self.config = config
 		self.console = Console()
+		self.setup_logging()
+		
 		self.nd: NameDataset | None = None
 		self.stats_by_country: dict[str, GenerationStats] = {}
-		self.stats_lock = Lock()  # Thread-safe stats tracking
+		self.stats_lock = Lock()
 		self.max_workers = max_workers
-		# Shared progress for all workers
+		
 		self.progress = Progress(
 			SpinnerColumn(),
 			TextColumn('[progress.description]{task.description}'),
@@ -67,7 +83,18 @@ class DatasetGenerator:
 			TimeRemainingColumn(),
 			console=self.console,
 		)
-		self.progress_lock = Lock()  # Thread-safe progress updates
+		self.progress_lock = Lock()
+
+	def setup_logging(self):
+		"""Set up file-based logging for debugging."""
+		log_file = Path('generation.log')
+		logging.basicConfig(
+			filename=log_file,
+			level=logging.DEBUG,
+			format='%(asctime)s - %(threadName)s - %(levelname)s - %(message)s',
+			filemode='w',  # Overwrite each run
+		)
+		self.console.print(f'[dim]Logging execution details to: {log_file.absolute()}[/dim]')
 
 	def initialize_dataset(self):
 		"""Initialize the names-dataset library (takes time and memory)."""
@@ -138,6 +165,34 @@ class DatasetGenerator:
 		if len(set(name_lower.replace('-', '').replace("'", ''))) <= 1:
 			return False
 
+		# Must contain at least one vowel (a, e, i, o, u, y) - "Consonant only" check
+		if not re.search(r'[aeiouy]', name_lower):
+			return False
+
+		# Double vowel check (reject aa, ii, uu, etc unless specifically allowed)
+		# Common valid ones might be ignored, but user specifically asked to clean "sabriina", "evaa", "claraa"
+		# Let's target double vowels at the end of string or unusual doubles
+		# "aa" at end: "evaa", "claraa"
+		if name_lower.endswith('aa'):
+			return False
+		# "ii" anywhere: "sabriina" -> usually "ina" or "iana"
+		if 'ii' in name_lower and name_lower != 'hawaii': # simple safeguard
+			return False
+		# "uu" anywhere (rare in most euro languages except Dutch/Finland etc, maybe too strict for global but OK for this list)
+		if 'uu' in name_lower:
+			return False
+		# "ee" is common (Renee), "oo" is common (Cooper) - keep those.
+
+		# Blacklist of common words/garbage
+		blacklist = {
+			'rien', 'empty', 'trop', 'equipe', 'entreprise', 'bro', 'bienvenue', 'zouz',
+			'null', 'undefined', 'test', 'user', 'admin', 'nom', 'prenom', 'name', 
+			'surname', 'firstname', 'lastname', 'unknown', 'inconnu', 'anonymous',
+			'umm',
+		}
+		if name_lower in blacklist:
+			return False
+
 		# Filter reduplicated nicknames (Titi, Momo, Boubou, etc.)
 		# Pattern: 2 syllables with same or similar sounds
 		if re.match(r'^(\w{1,3})\1+$', name_lower):
@@ -200,19 +255,80 @@ class DatasetGenerator:
 	@staticmethod
 	def clean_names(names: list[str], target_count: int) -> list[str]:
 		"""
-		Clean and filter a list of names to get valid first names.
-
-		Args:
-			names: List of candidate names (should be 15-20% more than target_count)
-			target_count: Desired number of valid names to return
-
-		Returns:
-			List of valid names (up to target_count)
+		Filter a list of names to get only valid ones, up to target_count.
+		This is primarily used for testing and basic regex-only cleaning.
 		"""
 		valid_names = [name for name in names if DatasetGenerator.is_valid_first_name(name)]
-
-		# Return only the requested amount
 		return valid_names[:target_count]
+
+	def clean_batch_with_ai(self, names: list[str]) -> list[str]:
+		"""
+		Clean a batch of names using OpenRouter AI.
+		Returns list of valid names.
+		"""
+		if not self.config.use_ai:
+			return names
+
+		api_key = self.config.ai_api_key or os.environ.get('OPENROUTER_API_KEY')
+		if not api_key:
+			self.console.print('[yellow]Warning: AI enabled but no API key provided. Skipping AI cleaning.[/]')
+			return names
+
+		# Allow up to 3 retries
+		for _ in range(3):
+			try:
+				prompt = (
+					"Filter this list of names. Return a JSON list of strictly valid first names only. "
+					"Remove words, places, brand names, garbage, full names (keep only first name), "
+					"and names with obvious typos (e.g. 'sabriina', 'evaa').\n\n"
+					f"Input List: {json.dumps(names)}\n\n"
+					"Return ONLY the JSON list."
+				)
+
+				response = httpx.post(
+					"https://openrouter.ai/api/v1/chat/completions",
+					headers={
+						"Authorization": f"Bearer {api_key}",
+						"Content-Type": "application/json",
+						"HTTP-Referer": "https://little-origin.com",
+					},
+					json={
+						"model": self.config.ai_model,
+						"messages": [{"role": "user", "content": prompt}],
+						"response_format": {"type": "json_object"},
+					},
+					timeout=30.0
+				)
+				response.raise_for_status()
+				data = response.json()
+				content = data['choices'][0]['message']['content']
+				
+				# Parse JSON response - try to find the list
+				try:
+					cleaned_data = json.loads(content)
+					# Handle { "names": [...] } or just [...]
+					if isinstance(cleaned_data, dict):
+						# Look for any list value
+						for val in cleaned_data.values():
+							if isinstance(val, list):
+								return [str(n) for n in val]
+						# If no list found, maybe empty?
+						return []
+					elif isinstance(cleaned_data, list):
+						return [str(n) for n in cleaned_data]
+				except json.JSONDecodeError:
+					# Fallback regex extraction if JSON fails
+					found = re.findall(r'"([^"]+)"', content)
+					if found:
+						return found
+					
+			except Exception as e:
+				self.console.print(f'[dim yellow]AI Batch query failed: {e}. Retrying...[/]')
+		
+		# If we get here, AI failed repeatedly. Return original names (or empty to be safe? safe is better)
+		# But returning original risks garbage. Let's return original and trust regex filters.
+		self.console.print('[red]AI cleaning failed after retries. Using regex-filtered names.[/]')
+		return names
 
 	def fetch_names_until_sufficient(
 		self,
@@ -220,61 +336,105 @@ class DatasetGenerator:
 		gender: str,
 		target_count: int,
 		task: TaskID,
-	) -> tuple[list[str], int]:
+	) -> tuple[list[str], int, int, int]:
 		"""
 		Fetch names from the dataset until we have enough valid names.
-
-		Keeps fetching in batches until we reach the target count or exhaust
-		available names.
-
-		Args:
-			country: Country code (e.g., 'US', 'DE')
-			gender: 'M' or 'F'
-			target_count: Desired number of valid names
-			task: Progress bar task ID
-
-		Returns:
-			Tuple of (valid_names, total_fetched)
+		Returns: (valid_names, total_fetched, regex_filtered_count, ai_filtered_count)
 		"""
 		all_valid_names: list[str] = []
 		total_fetched = 0
-		batch_size = int(target_count * 1.2)  # Start with 20% buffer
-		max_iterations = 5  # Safety limit to prevent infinite loops
+		regex_filtered_total = 0
+		ai_filtered_total = 0
+		
+		# Yield rate tracking (valid / fetched)
+		yield_rate = 0.5 # Start with a neutral-to-pessimistic estimate
+		current_offset = 0
+		max_iterations = 50 # Increase limit for large targets
+		
+		logging.info(f"[{country}-{gender}] Starting fetch. Target: {target_count}")
 
 		for iteration in range(max_iterations):
-			# Fetch a batch of names
+			# Calculate how many more valid names we need
+			needed = target_count - len(all_valid_names)
+			if needed <= 0:
+				break
+				
+			# Estimate how many we need to fetch to get 'needed' valid ones
+			# Apply a safety multiplier (1.5x) to avoid too many small iterations
+			estimate_to_fetch = int((needed / yield_rate) * 1.5)
+			
+			# Clamp step size: min 200, max 5000 per iteration
+			# If AI is enabled, we keep steps smaller (max 1000) to avoid huge AI batches
+			max_step = 1000 if self.config.use_ai else 5000
+			step_size = max(200, min(estimate_to_fetch, max_step))
+			
+			request_n = current_offset + step_size
+			logging.debug(f"[{country}-{gender}] Iteration {iteration+1}: Requesting top {request_n} (step: {step_size}, current yield: {yield_rate:.2f})")
+			
 			result = self.nd.get_top_names(
-				n=batch_size,
+				n=request_n,
 				use_first_names=True,
 				country_alpha2=country,
 				gender=gender,
 			)
-			batch = result.get(country, {}).get(gender, [])
-			total_fetched += len(batch)
+			full_list = result.get(country, {}).get(gender, [])
+			
+			# Get only the new names from the top N list
+			batch = full_list[current_offset:]
+			if not batch:
+				logging.info(f"[{country}-{gender}] No more names returned by dataset. Final count: {len(all_valid_names)}")
+				break
+				
+			current_offset = len(full_list)
+			batch_fetched_count = len(batch)
+			total_fetched += batch_fetched_count
 
-			# Filter valid names from this batch
-			valid_batch = [name for name in batch if self.is_valid_first_name(name)]
-			all_valid_names.extend(valid_batch)
+			# 1. Regex Filter
+			regex_valid = [name for name in batch if self.is_valid_first_name(name)]
+			regex_dropped = len(batch) - len(regex_valid)
+			regex_filtered_total += regex_dropped
+			
+			# 2. AI Filter (if enabled)
+			final_batch = []
+			if self.config.use_ai and regex_valid:
+				# Process in chunks of 100 for AI
+				ai_valid_names = []
+				chunk_size = 100
+				for i in range(0, len(regex_valid), chunk_size):
+					chunk = regex_valid[i:i+chunk_size]
+					cleaned_chunk = self.clean_batch_with_ai(chunk)
+					ai_valid_names.extend(cleaned_chunk)
+				
+				# Verify format again
+				final_batch = [n for n in ai_valid_names if self.is_valid_first_name(n)]
+				
+				ai_dropped = len(regex_valid) - len(final_batch)
+				ai_filtered_total += ai_dropped
+			else:
+				final_batch = regex_valid
 
-			# Update progress to show we're working
+			# Add new valid names (preserving order)
+			for name in final_batch:
+				if name not in all_valid_names:
+					all_valid_names.append(name)
+			
+			# Update yield rate based on this batch's performance
+			# We use a moving average or just the cumulative rate
+			if total_fetched > 0:
+				current_batch_yield = len(final_batch) / batch_fetched_count if batch_fetched_count > 0 else 0
+				# Moving average to stay responsive to data quality changes
+				yield_rate = (yield_rate * 0.3) + (current_batch_yield * 0.7)
+				yield_rate = max(0.01, yield_rate) # Don't let it hit zero
+
 			with self.progress_lock:
-				progress_pct = 25 + (25 * (iteration + 1) / max_iterations)
 				self.progress.update(
 					task,
-					completed=progress_pct,
 					description=f'[cyan]Fetching {country} {gender} names ({len(all_valid_names)}/{target_count})[/cyan]',
 				)
 
-			# Check if we have enough valid names
-			if len(all_valid_names) >= target_count:
-				break
-
-			# If we got fewer names than requested in this batch, we've exhausted the dataset
-			if len(batch) < batch_size:
-				break
-
+		logging.info(f"[{country}-{gender}] Finished. Got {len(all_valid_names)}/{target_count} names in {iteration+1} iterations.")
 		# Return exactly target_count names
-		return all_valid_names[:target_count], total_fetched
+		return all_valid_names[:target_count], total_fetched, regex_filtered_total, ai_filtered_total
 
 	def generate_country(self, country: str, task: TaskID) -> GenerationStats:
 		"""
@@ -299,13 +459,15 @@ class DatasetGenerator:
 		target_count = self.config.names_per_gender
 
 		# Fetch male names (with automatic retry until we have enough)
-		male_names, male_total_fetched = self.fetch_names_until_sufficient(
+		male_names, male_total_fetched, male_regex, male_ai = self.fetch_names_until_sufficient(
 			country=country,
 			gender='M',
 			target_count=target_count,
 			task=task,
 		)
-		stats.male_filtered = male_total_fetched - len(male_names)
+		stats.male_fetched = male_total_fetched
+		stats.male_regex_filtered = male_regex
+		stats.male_ai_filtered = male_ai
 
 		# Fetch female names (with automatic retry until we have enough)
 		with self.progress_lock:
@@ -315,13 +477,15 @@ class DatasetGenerator:
 				completed=50,
 			)
 
-		female_names, female_total_fetched = self.fetch_names_until_sufficient(
+		female_names, female_total_fetched, female_regex, female_ai = self.fetch_names_until_sufficient(
 			country=country,
 			gender='F',
 			target_count=target_count,
 			task=task,
 		)
-		stats.female_filtered = female_total_fetched - len(female_names)
+		stats.female_fetched = female_total_fetched
+		stats.female_regex_filtered = female_regex
+		stats.female_ai_filtered = female_ai
 
 		stats.male_names = len(male_names)
 		stats.female_names = len(female_names)
@@ -386,10 +550,12 @@ class DatasetGenerator:
 		self.console.print('\n[bold]Building summary...[/]')
 		summary_table = Table(title='Generation Summary', show_header=True, header_style='bold magenta')
 		summary_table.add_column('Country', style='cyan')
+		summary_table.add_column('Fetched', justify='right', style='dim')
 		summary_table.add_column('Male', justify='right', style='blue')
 		summary_table.add_column('Female', justify='right', style='magenta')
-		summary_table.add_column('Total', justify='right')
-		summary_table.add_column('Filtered', justify='right', style='yellow')
+		summary_table.add_column('Total', justify='right', style='bold')
+		summary_table.add_column('Regex Filt', justify='right', style='yellow')
+		summary_table.add_column('AI Filt', justify='right', style='red')
 
 		# Sort countries by original order
 		for country in self.config.countries:
@@ -397,13 +563,18 @@ class DatasetGenerator:
 			if not stats:
 				continue
 
-			total_filtered = stats.male_filtered + stats.female_filtered
+			total_fetched = stats.male_fetched + stats.female_fetched
+			total_regex = stats.male_regex_filtered + stats.female_regex_filtered
+			total_ai = stats.male_ai_filtered + stats.female_ai_filtered
+			
 			summary_table.add_row(
 				country,
+				f'{total_fetched:,}',
 				f'{stats.male_names:,}',
 				f'{stats.female_names:,}',
 				f'{stats.total_names:,}',
-				f'{total_filtered:,}' if total_filtered > 0 else '[dim]0[/dim]',
+				f'{total_regex:,}',
+				f'{total_ai:,}',
 			)
 
 		# Print final summary

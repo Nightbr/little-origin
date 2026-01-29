@@ -1,4 +1,4 @@
-import { SUPPORTED_COUNTRIES, names, reviews } from '@little-origin/core';
+import { SUPPORTED_COUNTRIES, matches, names, reviews } from '@little-origin/core';
 import { getNamesByCountries } from '@little-origin/name-data';
 import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import { db } from '../db/client';
@@ -91,6 +91,27 @@ class NameService {
 			.limit(limit);
 
 		return result;
+	}
+
+	async pruneExtendedNames() {
+		// Delete names where source is 'extended'
+		// AND the name is NOT used in the matches table
+		// AND the name is NOT used in the reviews table (liked or disliked)
+		const result = await db
+			.delete(names)
+			.where(
+				and(
+					eq(names.source, 'extended'),
+					notInArray(names.id, db.select({ nameId: matches.nameId }).from(matches)),
+					notInArray(
+						names.id,
+						db.select({ nameId: reviews.nameId }).from(reviews).where(eq(reviews.isLiked, true)),
+					),
+				),
+			)
+			.returning({ id: names.id });
+
+		return result.length;
 	}
 }
 

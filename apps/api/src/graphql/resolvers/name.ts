@@ -26,5 +26,9 @@ export const nameResolvers = {
 			// Typically admin only, but for MVP allow anyone or check auth
 			return nameService.seedNames();
 		},
+		pruneExtendedNames: async (_: unknown, __: unknown, context: GraphQLContext) => {
+			if (!context.user) throw new Error('Unauthorized');
+			return nameService.pruneExtendedNames();
+		},
 	},
 };

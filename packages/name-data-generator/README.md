@@ -107,6 +107,9 @@ generator.generate_all()
 | `--names` | `-n` | `250` | Number of names to fetch per gender |
 | `--countries` | `-c` | All 7 countries | Countries to generate (US, GB, DE, FR, IT, ES, IE) |
 | `--output` | `-o` | `packages/name-data/data/extended-dataset` | Output directory |
+| `--use-ai` | | `False` | Enable AI-based cleaning (requires API key) |
+| `--ai-api-key` | | `env: OPENROUTER_API_KEY` | OpenRouter API Key |
+| `--ai-model` | | `google/gemini-2.0-flash-001` | Model to use for cleaning |
 
 ## Supported Countries
 
@@ -136,6 +139,29 @@ All countries are processed in parallel using `ThreadPoolExecutor`:
 ## Memory Requirements
 
 The `names-dataset` library requires **~3.2GB of RAM** to load. Ensure your machine has sufficient memory.
+
+## AI Cleaning
+
+You can optionally use an LLM (via OpenRouter) to clean the generated names. This is useful for removing non-names that might pass regex filters.
+
+### Configuration
+
+You can provide the OpenRouter API key via:
+1.  **Environment Variable** (Recommended): Set `OPENROUTER_API_KEY` in your shell or a `.env` file (if using `python-dotenv`, though currently not automatically loaded, so shell export is best).
+2.  **CLI Argument**: Pass `--ai-api-key` directly.
+
+### Example
+
+```bash
+# Export key first
+export OPENROUTER_API_KEY=sk-or-v1-...
+
+# Run with AI enabled
+uv run generate-names --use-ai
+
+# Or specify model (default is google/gemini-2.0-flash-001)
+uv run generate-names --use-ai --ai-model openai/gpt-4o
+```
 
 ## Development
 

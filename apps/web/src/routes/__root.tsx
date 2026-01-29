@@ -2,7 +2,7 @@ import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { MatchNotification } from '@/components/match/MatchNotification';
 import { useAuth } from '@/hooks/useAuth';
 import { Outlet, createRootRouteWithContext, useLocation } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 export interface RouterContext {
 	auth: {

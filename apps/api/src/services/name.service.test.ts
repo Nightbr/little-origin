@@ -1,5 +1,5 @@
-import { type User, names, preferences, reviews, users } from '@little-origin/core';
-import { eq } from 'drizzle-orm';
+import { type User, matches, names, preferences, reviews, users } from '@little-origin/core';
+import { eq, sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
 import { runMigrations } from '../db/migrate';
@@ -218,5 +218,121 @@ describe('NameService Integration Tests', () => {
 		expect(result.length).toBe(2);
 		expect(result.map((n) => n.id)).not.toContain(allNames[0].id); // reviewed
 		expect(result.map((n) => n.id)).not.toContain(allNames[1].id); // excluded
+	});
+	it('should prune extended names not in matches', async () => {
+		// Clean start
+		await db.delete(names);
+		await db.delete(matches);
+
+		// Insert valid match and names
+		const [matchedName] = await db
+			.insert(names)
+			.values({
+				name: 'Matched',
+				gender: 'female',
+				originCountry: 'FR',
+				source: 'extended',
+			})
+			.returning();
+
+		await db.insert(matches).values({
+			nameId: matchedName.id,
+			userCount: 0,
+		});
+
+		// Insert unused extended name
+		await db.insert(names).values({
+			name: 'UnusedExtended',
+			gender: 'male',
+			originCountry: 'US',
+			source: 'extended',
+		});
+
+		// Insert unused static name
+		await db.insert(names).values({
+			name: 'UnusedStatic',
+			gender: 'male',
+			originCountry: 'US',
+			source: 'static',
+		});
+
+		// Count before
+		const beforeCount = await db.select({ count: sql<number>`count(*)` }).from(names);
+		expect(beforeCount[0].count).toBe(3);
+
+		// Prune
+		const deletedCount = await nameService.pruneExtendedNames();
+
+		// Check count
+		const afterCount = await db.select({ count: sql<number>`count(*)` }).from(names);
+		const remaining = await db.select().from(names);
+		const remainingNames = remaining.map((n) => n.name);
+
+		expect(deletedCount).toBe(1);
+		expect(afterCount[0].count).toBe(2);
+		expect(remainingNames).toContain('Matched');
+		expect(remainingNames).toContain('UnusedStatic');
+		expect(remainingNames).not.toContain('UnusedExtended');
+	});
+
+	it('should not prune extended names that have been liked', async () => {
+		// Clean start
+		await db.delete(names);
+		await db.delete(matches);
+		await db.delete(reviews);
+
+		// Insert extended name that is NOT matched but IS liked
+		const [likedName] = await db
+			.insert(names)
+			.values({
+				name: 'LikedOnly',
+				gender: 'female',
+				originCountry: 'FR',
+				source: 'extended',
+			})
+			.returning();
+
+		await db.insert(reviews).values({
+			userId: testUser.id,
+			nameId: likedName.id,
+			isLiked: true,
+		});
+
+		// Insert extended name that is disliked (should be pruned)
+		const [dislikedName] = await db
+			.insert(names)
+			.values({
+				name: 'DislikedName',
+				gender: 'male',
+				originCountry: 'ES',
+				source: 'extended',
+			})
+			.returning();
+
+		await db.insert(reviews).values({
+			userId: testUser.id,
+			nameId: dislikedName.id,
+			isLiked: false,
+		});
+
+		// Insert totally unused extended name (should be pruned)
+		await db.insert(names).values({
+			name: 'TotallyUnused',
+			gender: 'male',
+			originCountry: 'US',
+			source: 'extended',
+		});
+
+		// Prune
+		const deletedCount = await nameService.pruneExtendedNames();
+
+		// Check results
+		const remaining = await db.select().from(names);
+		const remainingNames = remaining.map((n) => n.name);
+
+		expect(deletedCount).toBe(2); // TotallyUnused and DislikedName
+		expect(remainingNames).toContain('LikedOnly');
+		expect(remainingNames).not.toContain('TotallyUnused');
+		expect(remainingNames).not.toContain('DislikedName');
 	});
 });

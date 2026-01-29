@@ -3,10 +3,11 @@ import {
 	NAME_INGESTION_PROGRESS_SUBSCRIPTION,
 	START_INGESTION_MUTATION,
 } from '@/graphql/operations';
+import { PRUNE_EXTENDED_NAMES_MUTATION } from '@/graphql/operations';
 import { useMutation, useQuery, useSubscription } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, CheckCircle, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -50,7 +51,11 @@ export const Route = createFileRoute('/advanced')({
 					Load extended baby name datasets from external sources.
 				</p>
 			</header>
-			<AdvancedIngestion />
+			<div className="space-y-12">
+				<AdvancedIngestion />
+				<hr className="border-sage-green/20" />
+				<PruneDatabase />
+			</div>
 		</div>
 	),
 });
@@ -260,6 +265,94 @@ function StatusBadge({ status }: StatusBadgeProps) {
 			{Icon && <Icon size={14} className={status === 'processing' ? 'animate-spin' : ''} />}
 			{label}
 		</div>
+	);
+}
+
+function PruneDatabase() {
+	const [pruneExtendedNames, { loading }] = useMutation(PRUNE_EXTENDED_NAMES_MUTATION);
+	const [confirming, setConfirming] = useState(false);
+	const [deletedCount, setDeletedCount] = useState<number | null>(null);
+
+	const handlePrune = async () => {
+		if (!confirming) {
+			setConfirming(true);
+			return;
+		}
+
+		try {
+			const result = await pruneExtendedNames();
+			setDeletedCount(result.data?.pruneExtendedNames ?? 0);
+			setConfirming(false);
+
+			// Reset success message after 5 seconds
+			setTimeout(() => setDeletedCount(null), 5000);
+		} catch (error) {
+			console.error('Prune failed:', error);
+		}
+	};
+
+	return (
+		<section className="space-y-4">
+			<div className="flex items-start justify-between">
+				<div>
+					<h2 className="text-2xl font-heading text-charcoal mb-2">Prune Database</h2>
+					<p className="text-muted-foreground max-w-xl">
+						Remove imported names that haven't been liked or matched by any user. This cleans up the
+						database by deleting unused "extended" source names, while protecting liked names,
+						matches, and static data.
+					</p>
+				</div>
+			</div>
+
+			<div className="bg-white rounded-2xl p-6 border border-sage-green/10 shadow-sm flex items-center justify-between">
+				<div className="flex items-center gap-4">
+					<div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+						<Trash2 size={24} />
+					</div>
+					<div>
+						<h3 className="text-lg font-semibold text-charcoal">Clean Unused Names</h3>
+						<p className="text-sm text-muted-foreground">This action cannot be undone.</p>
+					</div>
+				</div>
+
+				<div className="flex items-center gap-4">
+					{deletedCount !== null && (
+						<span className="text-sm font-medium text-sage-green animate-in fade-in slide-in-from-right-4">
+							Successfully removed {deletedCount.toLocaleString()} names
+						</span>
+					)}
+
+					{confirming ? (
+						<div className="flex gap-2 animate-in fade-in zoom-in-95">
+							<button
+								type="button"
+								onClick={() => setConfirming(false)}
+								className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-black/5"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={handlePrune}
+								disabled={loading}
+								className="px-4 py-2 rounded-xl bg-destructive text-white font-medium hover:bg-destructive/90 flex items-center gap-2"
+							>
+								{loading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+								Confirm Delete
+							</button>
+						</div>
+					) : (
+						<button
+							type="button"
+							onClick={() => setConfirming(true)}
+							className="px-6 py-3 rounded-xl border border-destructive/20 text-destructive font-semibold hover:bg-destructive/5 active:scale-95 transition-all"
+						>
+							Prune Database
+						</button>
+					)}
+				</div>
+			</div>
+		</section>
 	);
 }
 

@@ -241,3 +241,9 @@ export const NAME_INGESTION_PROGRESS_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const PRUNE_EXTENDED_NAMES_MUTATION = gql`
+  mutation PruneExtendedNames {
+    pruneExtendedNames
+  }
+`;
