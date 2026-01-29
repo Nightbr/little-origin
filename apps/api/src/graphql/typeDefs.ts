@@ -150,6 +150,7 @@ export const typeDefs = `#graphql
     completeOnboarding: Boolean!
     # Ingestion mutations
     startIngestion(country: String!): IngestionResult!
+    pruneExtendedNames: Int!
   }
 
   type Subscription {

@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 
@@ -22,6 +23,10 @@ def find_repo_root() -> Path:
 
 def main():
 	"""Main entry point for the CLI."""
+	# Load environment variables from .env file in repo root
+	repo_root = find_repo_root()
+	load_dotenv(repo_root / '.env')
+
 	console = Console()
 
 	parser = argparse.ArgumentParser(
@@ -53,6 +58,23 @@ Examples:
 		default=None,
 		help='Output directory (default: packages/name-data/data/extended-dataset)',
 	)
+	parser.add_argument(
+		'--use-ai',
+		action='store_true',
+		help='Enable AI-based cleaning using OpenRouter',
+	)
+	parser.add_argument(
+		'--ai-api-key',
+		type=str,
+		default=None,
+		help='OpenRouter API Key (or set OPENROUTER_API_KEY env var)',
+	)
+	parser.add_argument(
+		'--ai-model',
+		type=str,
+		default='google/gemini-2.0-flash-001',
+		help='AI model to use (default: google/gemini-2.0-flash-001)',
+	)
 	args = parser.parse_args()
 
 	# Determine paths - search for repository root from current working directory
@@ -72,6 +94,9 @@ Examples:
 		output_dir=output_dir,
 		countries=args.countries,
 		names_per_gender=args.names,
+		use_ai=args.use_ai,
+		ai_api_key=args.ai_api_key,
+		ai_model=args.ai_model,
 	)
 
 	# Determine max workers (use min of 4 or number of countries)
