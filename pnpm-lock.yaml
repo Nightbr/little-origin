@@ -149,7 +149,7 @@ importers:
       '@tanstack/react-router':
         specifier: 1.151.6
         version: 1.151.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tanstack/router-devtools':
+      '@tanstack/react-router-devtools':
         specifier: 1.151.6
         version: 1.151.6(@tanstack/react-router@1.151.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@tanstack/router-core@1.153.2)(csstype@3.2.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
@@ -1607,18 +1607,6 @@ packages:
     peerDependencies:
       '@tanstack/router-core': ^1.151.6
       csstype: ^3.0.10
-    peerDependenciesMeta:
-      csstype:
-        optional: true
-
-  '@tanstack/router-devtools@1.151.6':
-    resolution: {integrity: sha512-YqvLpTadp83KiemMHjUbQVfu9BQ4P6sBuiH7KUd0NSULcrBAIG4QpmrqgnnFioSJYYF276OUeCSXLVLj+svjhg==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      '@tanstack/react-router': ^1.151.6
-      csstype: ^3.0.10
-      react: '>=18.0.0 || >=19.0.0'
-      react-dom: '>=18.0.0 || >=19.0.0'
     peerDependenciesMeta:
       csstype:
         optional: true
@@ -5213,19 +5201,6 @@ snapshots:
       tiny-invariant: 1.3.3
     optionalDependencies:
       csstype: 3.2.3
-
-  '@tanstack/router-devtools@1.151.6(@tanstack/react-router@1.151.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@tanstack/router-core@1.153.2)(csstype@3.2.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@tanstack/react-router': 1.151.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tanstack/react-router-devtools': 1.151.6(@tanstack/react-router@1.151.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@tanstack/router-core@1.153.2)(csstype@3.2.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      clsx: 2.1.1
-      goober: 2.1.18(csstype@3.2.3)
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-    optionalDependencies:
-      csstype: 3.2.3
-    transitivePeerDependencies:
-      - '@tanstack/router-core'
 
   '@tanstack/router-generator@1.151.6':
     dependencies:
