@@ -11,6 +11,10 @@ NODE_ENV = "development"
 description = "Start development servers"
 run = "turbo dev"
 
+[tasks.docs]
+description = "Start documentation server"
+run = ["pnpm install", "pnpm --filter @little-origin/docs dev"]
+
 [tasks.build]
 description = "Build all packages and apps"
 run = "turbo build"

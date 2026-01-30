@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"jsx": "react",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@components/*": ["./src/components/*"]
+		},
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"strict": false,
+		"noEmit": true
+	},
+	"include": ["**/*.ts", "**/*.tsx"],
+	"exclude": ["node_modules", "build", ".docusaurus"]
+}
