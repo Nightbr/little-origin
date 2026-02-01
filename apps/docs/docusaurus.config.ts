@@ -78,7 +78,7 @@ const config: Config = {
 					],
 				},
 			],
-			copyright: `Copyright © ${new Date().getFullYear()} Little Origin. Built with Docusaurus.`,
+			copyright: `Copyright © ${new Date().getFullYear()} Little Origin.`,
 		},
 		prism: {
 			theme: prismThemes.github,

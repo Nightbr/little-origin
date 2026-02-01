@@ -1,5 +1,6 @@
 import Heading from '@theme/Heading';
 import Layout from '@theme/Layout';
+import Link from '@docusaurus/Link';
 
 export default function Home(): JSX.Element {
 	return (
@@ -16,12 +17,12 @@ export default function Home(): JSX.Element {
 						intuitive swipe interface. Real-time matching, global names, complete privacy.
 					</p>
 					<div className="hero__buttons">
-						<a className="button button--primary" href="/docs/deployment">
+						<Link className="button button--primary" to="/docs/deployment">
 							Deploy Now
-						</a>
-						<a className="button button--secondary" href="/docs/intro">
+						</Link>
+						<Link className="button button--secondary" to="/docs/intro">
 							How it Works
-						</a>
+						</Link>
 					</div>
 					<div className="hero__stats">
 						<div className="stat">
@@ -193,9 +194,9 @@ export default function Home(): JSX.Element {
 							in minutes with Docker Compose.
 						</p>
 						<div className="cta__buttons">
-							<a className="button button--primary button--large" href="/docs/deployment">
+							<Link className="button button--primary button--large" to="/docs/deployment">
 								Get Started Free
-							</a>
+							</Link>
 							<a
 								className="button button--secondary button--large"
 								href="https://github.com/Nightbr/little-origin"

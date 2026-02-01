@@ -17,23 +17,47 @@ Before you begin, ensure you have:
 
 ## Quick Start
 
-### 1. Clone the Repository
+### 1. Create docker-compose.yml
 
-```bash
-git clone https://github.com/Nightbr/little-origin.git
-cd little-origin
+Create a `docker-compose.yml` file:
+
+```yaml
+services:
+  little-origin:
+    image: ghcr.io/nightbr/little-origin:latest
+    container_name: little-origin
+    restart: unless-stopped
+    environment:
+      # Timezone
+      TZ: Europe/Paris
+
+      # Application
+      NODE_ENV: production
+      PORT: 3000
+      SERVE_STATIC: "true"
+
+      # Database
+      DATABASE_URL: file:/.data/little-origin.db
+
+      # Authentication (REQUIRED - change this!)
+      JWT_SECRET: change_me_to_secure_random_string
+    volumes:
+      - little-origin_data:/.data
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  little-origin_data:
+    driver: local
 ```
 
-### 2. Create Environment File
-
-Create a `.env` file in the project root:
-
-```bash
-# Generate a secure JWT secret
-JWT_SECRET=your_very_secret_key_here_make_it_long_and_random
-```
-
-:::tip Generate a Secure Secret
+:::tip Generate a Secure JWT Secret
 
 Use `openssl` to generate a secure random key:
 
@@ -43,21 +67,21 @@ openssl rand -base64 32
 
 :::
 
-### 3. Start the Application
+### 2. Start the Application
 
 ```bash
 docker compose up -d
 ```
 
 This will:
-- Build the Docker images (first run takes a few minutes)
-- Start both the API and web frontend
+- Pull the latest image from GitHub Container Registry
+- Start the application
 - Initialize the SQLite database
 - Run database migrations automatically
 
-### 4. Access Your Instance
+### 3. Access Your Instance
 
-- **Web App:** http://localhost:4000
+- **Web App:** http://localhost:3000
 - **GraphQL Playground:** http://localhost:3000/graphql
 - **Health Check:** http://localhost:3000/health
 
@@ -70,22 +94,89 @@ This will:
 | `JWT_SECRET` | Yes | Secret key for JWT token signing | *(none)* |
 | `PORT` | No | API port | `3000` |
 | `NODE_ENV` | No | Environment (`production` or `development`) | `production` |
+| `TZ` | No | Container timezone | `UTC` |
+| `DATABASE_URL` | No | SQLite database path | `file:/.data/little-origin.db` |
+| `SERVE_STATIC` | No | Serve frontend from API | `true` |
 
 ### Ports
 
-- **3000** - API server (GraphQL + REST)
-- **4000** - Web frontend (served by API)
+- **3000** - API server and web frontend (when SERVE_STATIC=true)
 
 ### Volumes
 
-- **`.data`** - SQLite database directory (persisted across restarts)
-- **`/api/node_modules/.cache/better-sqlite3`** - Native module cache
+- **`little-origin_data`** - Named volume for SQLite database (persisted across restarts)
 
 ## Production Considerations
 
-### Domain Configuration
+### Domain Configuration with Traefik
 
-To use Little Origin with your own domain:
+For production use with automatic HTTPS, we recommend using Traefik as a reverse proxy.
+
+#### Complete docker-compose.yml with Traefik
+
+```yaml
+services:
+  little-origin:
+    image: ghcr.io/nightbr/little-origin:latest
+    container_name: little-origin
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Paris
+      NODE_ENV: production
+      PORT: 3000
+      SERVE_STATIC: "true"
+      DATABASE_URL: file:/.data/little-origin.db
+      JWT_SECRET: change_me_to_secure_random_string
+    volumes:
+      - little-origin_data:/.data
+    networks:
+      - reverseproxy
+    labels:
+      # Traefik routing
+      - "traefik.enable=true"
+      - "traefik.http.routers.little-origin.rule=Host(`little-origin.example.com`)"
+      - "traefik.http.routers.little-origin.entrypoints=websecure"
+      - "traefik.http.routers.little-origin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.little-origin.loadbalancer.server.port=3000"
+      # Watchtower for automatic updates (optional)
+      - "com.centurylinklabs.watchtower.enable=true"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Watchtower for automatic updates (optional)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=86400  # Check daily
+      - WATCHTOWER_LABEL_ENABLE=true
+
+volumes:
+  little-origin_data:
+    driver: local
+
+networks:
+  reverseproxy:
+    external: true
+```
+
+:::tip
+
+Replace `little-origin.example.com` with your actual domain name and ensure the `reverseproxy` network exists in Traefik configuration.
+
+:::
+
+#### Without Traefik (nginx Alternative)
+
+If you prefer nginx instead of Traefik:
 
 1. **Set up DNS** to point your domain to your server IP
 2. **Configure reverse proxy** (nginx recommended):
@@ -115,29 +206,26 @@ sudo certbot --nginx -d your-domain.com
 ### Security Best Practices
 
 1. **Use a strong JWT secret** - At least 32 characters, randomly generated
-2. **Run behind a reverse proxy** - Don't expose ports directly
-3. **Enable HTTPS** - Protect data in transit
-4. **Backup your database** - Regularly backup the `.data` directory
-5. **Update regularly** - Pull latest changes and rebuild images
-
-```bash
-# Update and rebuild
-git pull
-docker compose down
-docker compose build --no-cache
-docker compose up -d
-```
+2. **Run behind a reverse proxy** - Use Traefik or nginx with HTTPS enabled
+3. **Enable HTTPS** - Protect data in transit with Let's Encrypt certificates
+4. **Backup your database** - Regularly backup the named volume
+5. **Update regularly** - Pull latest images or use Watchtower for automatic updates
+6. **Monitor health checks** - Ensure the container health check passes
 
 ### Database Backups
 
 Backup your SQLite database regularly:
 
 ```bash
-# Backup
-cp .data/little-origin.db .data/little-origin.db.backup.$(date +%Y%m%d)
+# Backup from named volume
+docker run --rm \
+  -v little-origin_data:/data \
+  -v $(pwd):/backup \
+  alpine tar czf /backup/little-origin-backup-$(date +%Y%m%d).tar.gz /data
 
-# Or create a compressed backup
-tar -czf backup-$(date +%Y%m%d).tar.gz .data/
+# Or backup entire volume
+docker volume ls  # Find the volume name
+docker run --rm -v little-origin_data:/data -v $(pwd):/backup alpine tar czf /backup/backup-$(date +%Y%m%d).tar.gz /data
 ```
 
 ### Resource Limits
@@ -146,7 +234,7 @@ Configure resource limits in `docker-compose.yml`:
 
 ```yaml
 services:
-  api:
+  little-origin:
     deploy:
       resources:
         limits:
@@ -164,70 +252,131 @@ services:
 Check logs:
 
 ```bash
-docker compose logs api
+docker compose logs little-origin
 ```
 
 Common issues:
-- **Port already in use** - Change ports in `docker-compose.yml`
+- **Port already in use** - Change the port mapping in `docker-compose.yml`
 - **Insufficient memory** - Ensure server has at least 1GB RAM available
-- **Permission denied** - Check file permissions on `.data` directory
+- **Permission denied** - Check volume permissions
+- **Health check failing** - Verify the container can reach `http://localhost:3000/health`
 
 ### Database errors
 
 The database initializes automatically on first run. If you see database errors:
 
 ```bash
-# Remove old database and restart
-rm -rf .data
-docker compose down
+# Remove old volume and restart
+docker compose down -v
 docker compose up -d
 ```
 
-### Build fails
+:::danger
 
-Ensure Docker has sufficient resources and try a clean build:
+This will delete all existing data!
+
+:::
+
+### Image pull fails
+
+If you encounter issues pulling the image:
 
 ```bash
-docker compose build --no-cache
+# Try pulling manually first
+docker pull ghcr.io/nightbr/little-origin:latest
+
+# If authentication issues, ensure you're logged in to GitHub Container Registry
+docker login ghcr.io
 ```
 
 ## Upgrading
 
-To upgrade to the latest version:
+For detailed instructions on upgrading your Little Origin deployment, including automatic updates with Watchtower, see the **[Updating Little Origin](/docs/deployment/updating)** guide.
+
+Quick update using docker-compose:
 
 ```bash
-# 1. Backup your data
-tar -czf backup-$(date +%Y%m%d).tar.gz .data/
+# 1. Pull the latest image
+docker compose pull
 
-# 2. Pull latest changes
-git pull
-
-# 3. Rebuild and restart
-docker compose down
-docker compose build --no-cache
+# 2. Restart with the new image
 docker compose up -d
 
-# 4. Verify
+# 3. Verify the update
 docker compose ps
 ```
+
+## Build from Source
+
+If you prefer to build from source instead of using the pre-built image:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Nightbr/little-origin.git
+cd little-origin
+```
+
+### 2. Create docker-compose.yml
+
+Use this docker-compose.yml for building from source:
+
+```yaml
+services:
+  little-origin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: little-origin
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Paris
+      NODE_ENV: production
+      PORT: 3000
+      SERVE_STATIC: "true"
+      DATABASE_URL: file:/.data/little-origin.db
+      JWT_SECRET: change_me_to_secure_random_string
+    volumes:
+      - little-origin_data:/.data
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  little-origin_data:
+    driver: local
+```
+
+### 3. Build and Start
+
+```bash
+docker compose up -d --build
+```
+
+:::note
+
+Building from source takes longer on first run and requires more disk space, but allows you to customize the code if needed.
+
+:::
 
 ## Uninstalling
 
 To completely remove Little Origin:
 
 ```bash
-# Stop containers
-docker compose down
-
-# Remove volumes (deletes database!)
+# Stop containers and remove volumes (deletes database!)
 docker compose down -v
 
-# Remove images
-docker rmi little-origin-api little-origin-web
+# Remove the image
+docker rmi ghcr.io/nightbr/little-origin:latest
 
-# Remove project directory
-cd ..
-rm -rf little-origin
+# Remove the backup volume if desired
+docker volume rm little-origin_data
 ```
 
 :::danger Data Loss
@@ -239,5 +388,5 @@ Running `docker compose down -v` will delete all data including user accounts, r
 ## Next Steps
 
 - **[Configure your instance](/docs/configuration)** - Customize name sources and preferences
+- **[Updating Little Origin](/docs/deployment/updating)** - Keep your deployment up to date
 - **[Explore features](/docs/features/swiping)** - Learn about swiping, matching, and collaboration
-- **[Self-hosting guide](/docs/development/setup)** - Advanced configuration and development setup
