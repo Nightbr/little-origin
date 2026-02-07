@@ -3,16 +3,16 @@ import { cn } from '@/lib/utils';
 import { Link, useRouter } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+	FolderCog,
 	Heart,
+	HeartHandshake,
 	HeartOff,
 	Home,
 	LogOut,
 	Menu,
 	Settings,
-	UserPlus,
 	Users,
 	X,
-	Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -21,12 +21,12 @@ const baseMenuItems = [
 	{ label: 'Home', icon: Home, to: '/' },
 	{ label: 'Liked Names', icon: Heart, to: '/likes' },
 	{ label: 'Disliked Names', icon: HeartOff, to: '/dislikes' },
-	{ label: 'Matches', icon: Users, to: '/matches' },
+	{ label: 'Matches', icon: HeartHandshake, to: '/matches' },
 	{ label: 'Preferences', icon: Settings, to: '/preferences' },
-	{ label: 'Add Member', icon: UserPlus, to: '/add-user' },
+	{ label: 'Members', icon: Users, to: '/add-user' },
 ];
 
-const advancedMenuItem = { label: 'Advanced', icon: Zap, to: '/advanced' };
+const advancedMenuItem = { label: 'Advanced', icon: FolderCog, to: '/advanced' };
 
 export function BurgerMenu() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -128,7 +128,7 @@ export function BurgerMenu() {
 							onClick={handleFooterTap}
 							className="text-sm text-muted-foreground/70 text-center mt-4 cursor-pointer hover:text-muted-foreground transition-colors"
 						>
-							Built with ❤️ for new parents
+							Built with ❤️ for future parents
 						</button>
 					</motion.div>
 				)}

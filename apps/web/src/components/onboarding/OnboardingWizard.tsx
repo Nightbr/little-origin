@@ -26,7 +26,7 @@ export function OnboardingWizard() {
 	const [step, setStep] = useState(1);
 	const [users, setUsers] = useState<OnboardingUser[]>([]);
 	const [preferences, setPreferences] = useState<Preferences>({
-		countryOrigins: ['US'],
+		countryOrigins: [],
 		genderPreference: 'both',
 		maxCharacters: 12,
 		familyName: '',

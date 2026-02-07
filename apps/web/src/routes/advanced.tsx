@@ -44,7 +44,7 @@ export const Route = createFileRoute('/advanced')({
 		}
 	},
 	component: () => (
-		<div className="p-8 max-w-4xl mx-auto w-full">
+		<div className="p-8 max-w-2xl mx-auto w-full">
 			<header className="mb-12">
 				<h1 className="text-4xl font-heading text-primary mb-2">Advanced Settings</h1>
 				<p className="text-muted-foreground">
