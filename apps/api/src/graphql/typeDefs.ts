@@ -94,7 +94,7 @@ export const typeDefs = `#graphql
     isOnboardingComplete: Boolean!
   }
 
-  type OnboardingUser {
+  type OnboardingMember {
     id: ID!
     username: String!
   }
@@ -135,7 +135,6 @@ export const typeDefs = `#graphql
   }
 
   type Mutation {
-    register(username: String!, password: String!): AuthPayload!
     login(username: String!, password: String!): AuthPayload!
     logout: Boolean!
     refreshToken: RefreshPayload!
@@ -144,8 +143,9 @@ export const typeDefs = `#graphql
     undoLastReview: Review
     updatePreferences(input: UpdatePreferencesInput!): UserPreferences!
     deleteUser(userId: ID!): Boolean!
+    addMember(username: String!, password: String!): OnboardingMember!
     # Onboarding mutations (no auth required)
-    addOnboardingUser(username: String!, password: String!): OnboardingUser!
+    addOnboardingMember(username: String!, password: String!): OnboardingMember!
     saveOnboardingPreferences(input: UpdatePreferencesInput!): UserPreferences!
     completeOnboarding: Boolean!
     # Ingestion mutations

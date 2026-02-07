@@ -1,5 +1,5 @@
 import { DeleteUserDialog } from '@/components/lists/DeleteUserDialog';
-import { ALL_USERS_QUERY, DELETE_USER_MUTATION, REGISTER_MUTATION } from '@/graphql/operations';
+import { ADD_MEMBER_MUTATION, ALL_USERS_QUERY, DELETE_USER_MUTATION } from '@/graphql/operations';
 import { useAuth } from '@/hooks/useAuth';
 import { useMutation, useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
@@ -11,17 +11,17 @@ interface UserData {
 	username: string;
 }
 
-export const Route = createFileRoute('/add-user')({
+export const Route = createFileRoute('/members')({
 	beforeLoad: ({ context }) => {
 		// Must be logged in to add new users
 		if (!context.auth.isAuthenticated) {
 			throw redirect({ to: '/login' });
 		}
 	},
-	component: AddUserView,
+	component: MembersView,
 });
 
-function AddUserView() {
+function MembersView() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
@@ -29,7 +29,7 @@ function AddUserView() {
 	const [loading, setLoading] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 	const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
-	const [registerMutation] = useMutation(REGISTER_MUTATION);
+	const [addMemberMutation] = useMutation(ADD_MEMBER_MUTATION);
 	const [deleteUserMutation] = useMutation(DELETE_USER_MUTATION, {
 		refetchQueries: [{ query: ALL_USERS_QUERY }],
 	});
@@ -44,7 +44,7 @@ function AddUserView() {
 		setLoading(true);
 
 		try {
-			await registerMutation({ variables: { username, password } });
+			await addMemberMutation({ variables: { username, password } });
 			setSuccess(true);
 			setUsername('');
 			setPassword('');
@@ -95,9 +95,9 @@ function AddUserView() {
 	const userToDelete = users.find((u) => u.id === deleteUserId);
 
 	return (
-		<div className="p-8 max-w-lg mx-auto w-full">
+		<div className="p-8 max-w-2xl mx-auto w-full">
 			<header className="mb-8">
-				<h1 className="text-4xl font-heading text-primary mb-2">Family Members</h1>
+				<h1 className="text-4xl font-heading text-primary mb-2">Members</h1>
 				<p className="text-muted-foreground">Add another person to help choose your baby's name.</p>
 			</header>
 
@@ -138,9 +138,9 @@ function AddUserView() {
 						<div className="w-16 h-16 bg-sage-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
 							<Check className="text-sage-green" size={32} />
 						</div>
-						<h2 className="text-xl font-heading text-charcoal mb-2">User Added!</h2>
+						<h2 className="text-xl font-heading text-charcoal mb-2">Member Added!</h2>
 						<p className="text-muted-foreground">
-							The new family member can now log in and start swiping.
+							The new member can now log in and start swiping.
 						</p>
 					</div>
 				) : (
@@ -185,7 +185,7 @@ function AddUserView() {
 							) : (
 								<>
 									<UserPlus size={20} />
-									Add Family Member
+									Add Member
 								</>
 							)}
 						</button>

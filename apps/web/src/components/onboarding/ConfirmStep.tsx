@@ -21,6 +21,7 @@ interface ConfirmStepProps {
 export function ConfirmStep({ users, preferences, onComplete, loading, error }: ConfirmStepProps) {
 	const countryNames = preferences.countryOrigins
 		.map((code) => SUPPORTED_COUNTRIES.find((c) => c.code === code)?.name || code)
+		.sort()
 		.join(', ');
 
 	return (
@@ -37,7 +38,7 @@ export function ConfirmStep({ users, preferences, onComplete, loading, error }: 
 				<div className="flex items-start gap-4 p-4 bg-calm-ivory rounded-2xl">
 					<Users className="text-sage-green mt-1" />
 					<div>
-						<h4 className="font-bold text-charcoal">Family Members</h4>
+						<h4 className="font-bold text-charcoal">Members</h4>
 						<p className="text-muted-foreground">{users.map((u) => u.username).join(', ')}</p>
 					</div>
 				</div>

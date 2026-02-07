@@ -69,6 +69,11 @@ export function PreferencesStep({ preferences, onPreferencesChange }: Preference
 						</button>
 					))}
 				</div>
+				{preferences.countryOrigins.length === 0 && (
+					<p className="text-sm text-primary font-medium mt-2">
+						Select at least one name origin to continue
+					</p>
+				)}
 			</section>
 
 			{/* Max Length */}

@@ -17,7 +17,7 @@ As an administrator, I want to access advanced settings through a hidden gesture
 | ID | Requirement | Details |
 |----|-------------|---------|
 | ADV-001 | Hidden activation | Advanced menu item is hidden by default |
-| ADV-002 | Tap gesture | 5 taps on "Built with ❤️ for new parents" text reveals Advanced menu |
+| ADV-002 | Tap gesture | 5 taps on "Built with ❤️ for future parents" text reveals Advanced menu |
 | ADV-003 | Tap timeout | Tap counter resets after 2 seconds of inactivity |
 | ADV-004 | Persistent state | Once revealed, Advanced menu remains visible for the session |
 | ADV-005 | Visual feedback | No visual feedback during tapping (prevents hinting) |
@@ -329,7 +329,7 @@ subscription OnNameIngestionProgress {
 
 1. Start app: `pnpm dev`
 2. Login and open menu
-3. Tap "Built with ❤️ for new parents" 5 times quickly
+3. Tap "Built with ❤️ for future parents" 5 times quickly
 4. Verify "Advanced" appears in menu
 5. Navigate to `/advanced`
 6. Click "Load Names" for Ireland (IE - smallest dataset)

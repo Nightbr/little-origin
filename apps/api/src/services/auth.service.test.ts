@@ -3,10 +3,10 @@ import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../db/client';
 import { runMigrations } from '../db/migrate';
-import { authService } from './auth.service';
+import { memberService } from './member.service';
 import { reviewService } from './review.service';
 
-describe('AuthService Integration Tests', () => {
+describe('MemberService Integration Tests', () => {
 	let testUser1: User;
 	let testUser2: User;
 	let testUser3: User;
@@ -67,7 +67,7 @@ describe('AuthService Integration Tests', () => {
 
 	describe('deleteUser', () => {
 		it('should delete a user successfully', async () => {
-			await authService.deleteUser(testUser3.id, testUser1.id);
+			await memberService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify user is deleted
 			const [deletedUser] = await db.select().from(users).where(eq(users.id, testUser3.id));
@@ -84,7 +84,7 @@ describe('AuthService Integration Tests', () => {
 			expect(reviewsBefore).toHaveLength(2);
 
 			// Delete user
-			await authService.deleteUser(testUser3.id, testUser1.id);
+			await memberService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify reviews are cascade deleted
 			const reviewsAfter = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));
@@ -97,7 +97,7 @@ describe('AuthService Integration Tests', () => {
 			await db.delete(users).where(eq(users.id, testUser3.id));
 
 			// Try to delete the last user - should throw error
-			await expect(authService.deleteUser(testUser1.id, testUser1.id)).rejects.toThrow(
+			await expect(memberService.deleteUser(testUser1.id, testUser1.id)).rejects.toThrow(
 				'Cannot delete the last user',
 			);
 		});
@@ -105,7 +105,7 @@ describe('AuthService Integration Tests', () => {
 		it('should throw error when user does not exist', async () => {
 			const nonExistentUserId = 99999;
 
-			await expect(authService.deleteUser(nonExistentUserId, testUser1.id)).rejects.toThrow(
+			await expect(memberService.deleteUser(nonExistentUserId, testUser1.id)).rejects.toThrow(
 				'User not found',
 			);
 		});
@@ -116,7 +116,7 @@ describe('AuthService Integration Tests', () => {
 			expect(countBefore.count).toBeGreaterThanOrEqual(2);
 
 			// Should not throw
-			await expect(authService.deleteUser(testUser3.id, testUser1.id)).resolves.not.toThrow();
+			await expect(memberService.deleteUser(testUser3.id, testUser1.id)).resolves.not.toThrow();
 		});
 	});
 
@@ -139,7 +139,7 @@ describe('AuthService Integration Tests', () => {
 			expect(matchBefore?.userCount).toBe(3);
 
 			// Delete user3
-			await authService.deleteUser(testUser3.id, testUser1.id);
+			await memberService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify user is deleted
 			const [deletedUser] = await db.select().from(users).where(eq(users.id, testUser3.id));
@@ -161,7 +161,7 @@ describe('AuthService Integration Tests', () => {
 			expect(reviewsBefore.length).toBeGreaterThan(0);
 
 			// Delete user
-			await authService.deleteUser(testUser3.id, testUser1.id);
+			await memberService.deleteUser(testUser3.id, testUser1.id);
 
 			// Verify review is deleted
 			const reviewsAfter = await db.select().from(reviews).where(eq(reviews.userId, testUser3.id));

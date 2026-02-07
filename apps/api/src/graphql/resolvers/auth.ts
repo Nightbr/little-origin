@@ -2,6 +2,7 @@ import { users } from '@little-origin/core';
 import { db } from '../../db/client';
 import { authService } from '../../services/auth.service';
 import { matchService } from '../../services/match.service';
+import { memberService } from '../../services/member.service';
 import { REFRESH_TOKEN_COOKIE_OPTIONS } from '../../utils/jwt';
 import type { GraphQLContext } from '../types';
 
@@ -18,21 +19,18 @@ export const authResolvers = {
 		},
 	},
 	Mutation: {
-		register: async (
+		addMember: async (
 			_: unknown,
 			{ username, password }: { username: string; password: string },
 			context: GraphQLContext,
 		) => {
-			const { user, tokens } = await authService.register({ username, passwordHash: password });
+			// Must be authenticated to add a member
+			if (!context.user) {
+				throw new Error('Unauthorized');
+			}
 
-			// Set refresh token as HTTP-only cookie
-			context.res.cookie(
-				REFRESH_TOKEN_COOKIE_NAME,
-				tokens.refreshToken,
-				REFRESH_TOKEN_COOKIE_OPTIONS,
-			);
-
-			return { user, accessToken: tokens.accessToken };
+			// Create user without generating tokens or setting cookies
+			return memberService.addMember(username, password);
 		},
 		login: async (
 			_: unknown,
@@ -71,7 +69,7 @@ export const authResolvers = {
 			}
 
 			const targetUserId = Number.parseInt(userId, 10);
-			await authService.deleteUser(targetUserId, context.user.id);
+			await memberService.deleteUser(targetUserId, context.user.id);
 			await matchService.recalculateAllMatches();
 
 			return true;

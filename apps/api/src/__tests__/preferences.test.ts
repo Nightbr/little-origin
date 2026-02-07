@@ -2,9 +2,10 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+	ADD_ONBOARDING_MEMBER_MUTATION,
 	GRAPHQL_ENDPOINT,
+	LOGIN_MUTATION,
 	PREFERENCES_QUERY,
-	REGISTER_MUTATION,
 	UPDATE_PREFERENCES_MUTATION,
 } from './graphql-operations';
 import { createTestApp } from './test-server';
@@ -20,17 +21,26 @@ describe('GetPreferences Query', () => {
 		const username = 'prefs_test_user';
 		const password = 'password123';
 
-		// Register a user
-		const registerResponse = await request(app)
+		// Create a user
+		await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: REGISTER_MUTATION,
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username, password },
 			})
 			.set('Content-Type', 'application/json');
 
-		expect(registerResponse.status).toBe(200);
-		const token = registerResponse.body.data.register.accessToken as string;
+		// Log in
+		const loginResponse = await request(app)
+			.post(GRAPHQL_ENDPOINT)
+			.send({
+				query: LOGIN_MUTATION,
+				variables: { username, password },
+			})
+			.set('Content-Type', 'application/json');
+
+		expect(loginResponse.status).toBe(200);
+		const token = loginResponse.body.data.login.accessToken as string;
 
 		// Get preferences
 		const response = await request(app)
@@ -56,17 +66,26 @@ describe('GetPreferences Query', () => {
 		const username = 'prefs_update_test_user';
 		const password = 'password123';
 
-		// Register a user
-		const registerResponse = await request(app)
+		// Create a user
+		await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: REGISTER_MUTATION,
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username, password },
 			})
 			.set('Content-Type', 'application/json');
 
-		expect(registerResponse.status).toBe(200);
-		const token = registerResponse.body.data.register.accessToken as string;
+		// Log in
+		const loginResponse = await request(app)
+			.post(GRAPHQL_ENDPOINT)
+			.send({
+				query: LOGIN_MUTATION,
+				variables: { username, password },
+			})
+			.set('Content-Type', 'application/json');
+
+		expect(loginResponse.status).toBe(200);
+		const token = loginResponse.body.data.login.accessToken as string;
 
 		// Update preferences with a family name
 		const updateResponse = await request(app)
@@ -103,17 +122,26 @@ describe('GetPreferences Query', () => {
 		const username = 'prefs_empty_test_user';
 		const password = 'password123';
 
-		// Register a user
-		const registerResponse = await request(app)
+		// Create a user
+		await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: REGISTER_MUTATION,
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username, password },
 			})
 			.set('Content-Type', 'application/json');
 
-		expect(registerResponse.status).toBe(200);
-		const token = registerResponse.body.data.register.accessToken as string;
+		// Log in
+		const loginResponse = await request(app)
+			.post(GRAPHQL_ENDPOINT)
+			.send({
+				query: LOGIN_MUTATION,
+				variables: { username, password },
+			})
+			.set('Content-Type', 'application/json');
+
+		expect(loginResponse.status).toBe(200);
+		const token = loginResponse.body.data.login.accessToken as string;
 
 		// Update preferences with empty family name
 		const updateResponse = await request(app)

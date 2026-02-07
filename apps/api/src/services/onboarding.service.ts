@@ -37,13 +37,16 @@ class OnboardingService {
 	}
 
 	/**
-	 * Add a user during onboarding (no token returned)
+	 * Add a member during onboarding (no token returned)
 	 */
-	async addUser(username: string, password: string): Promise<{ id: number; username: string }> {
+	async addOnboardingMember(
+		username: string,
+		password: string,
+	): Promise<{ id: number; username: string }> {
 		// Check if onboarding is already complete
 		const isComplete = await this.isOnboardingComplete();
 		if (isComplete) {
-			throw new Error('Onboarding already completed. Use the regular registration flow.');
+			throw new Error('Onboarding already completed. Use the addMember mutation instead.');
 		}
 
 		// Validate limit

@@ -2,7 +2,7 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
-	ADD_ONBOARDING_USER_MUTATION,
+	ADD_ONBOARDING_MEMBER_MUTATION,
 	COMPLETE_ONBOARDING_MUTATION,
 	GRAPHQL_ENDPOINT,
 	SAVE_ONBOARDING_PREFERENCES_MUTATION,
@@ -23,14 +23,14 @@ describe('Onboarding flow', () => {
 		const addUserResponse = await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: ADD_ONBOARDING_USER_MUTATION,
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username, password },
 			})
 			.set('Content-Type', 'application/json');
 
 		expect(addUserResponse.status).toBe(200);
 		const addUserData = addUserResponse.body.data;
-		expect(addUserData.addOnboardingUser.username).toBe(username);
+		expect(addUserData.addOnboardingMember.username).toBe(username);
 
 		const prefsInput = {
 			countryOrigins: ['US', 'FR'],

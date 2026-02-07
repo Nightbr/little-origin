@@ -1,7 +1,7 @@
 import type { InsertPreferences } from '@little-origin/core';
 import { onboardingService } from '../../services/onboarding.service';
 
-interface AddOnboardingUserArgs {
+interface AddOnboardingMemberArgs {
 	username: string;
 	password: string;
 }
@@ -20,8 +20,8 @@ export const appResolvers = {
 		},
 	},
 	Mutation: {
-		addOnboardingUser: async (_: unknown, { username, password }: AddOnboardingUserArgs) => {
-			return onboardingService.addUser(username, password);
+		addOnboardingMember: async (_: unknown, { username, password }: AddOnboardingMemberArgs) => {
+			return onboardingService.addOnboardingMember(username, password);
 		},
 		saveOnboardingPreferences: async (_: unknown, { input }: SaveOnboardingPreferencesArgs) => {
 			return onboardingService.savePreferences(input);

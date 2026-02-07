@@ -9,9 +9,9 @@ query AppStatus {
   }
 }`;
 
-export const ADD_ONBOARDING_USER_MUTATION = `#graphql
-mutation AddOnboardingUser($username: String!, $password: String!) {
-  addOnboardingUser(username: $username, password: $password) {
+export const ADD_ONBOARDING_MEMBER_MUTATION = `#graphql
+mutation AddOnboardingMember($username: String!, $password: String!) {
+  addOnboardingMember(username: $username, password: $password) {
     id
     username
   }
@@ -32,9 +32,9 @@ mutation CompleteOnboarding {
   completeOnboarding
 }`;
 
-export const REGISTER_MUTATION = `#graphql
-mutation Register($username: String!, $password: String!) {
-  register(username: $username, password: $password) {
+export const LOGIN_MUTATION = `#graphql
+mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
     accessToken
     user {
       id
@@ -101,5 +101,29 @@ mutation UpdatePreferences($input: UpdatePreferencesInput!) {
     genderPreference
     maxCharacters
     familyName
+  }
+}`;
+
+export const ADD_MEMBER_MUTATION = `#graphql
+mutation AddMember($username: String!, $password: String!) {
+  addMember(username: $username, password: $password) {
+    id
+    username
+  }
+}`;
+
+export const ALL_USERS_QUERY = `#graphql
+query AllUsers {
+  allUsers {
+    id
+    username
+  }
+}`;
+
+export const ME_QUERY = `#graphql
+query Me {
+  me {
+    id
+    username
   }
 }`;

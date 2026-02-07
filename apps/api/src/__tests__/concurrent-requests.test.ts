@@ -2,10 +2,11 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+	ADD_ONBOARDING_MEMBER_MUTATION,
 	GRAPHQL_ENDPOINT,
 	LIKED_NAMES_QUERY,
+	LOGIN_MUTATION,
 	NEXT_NAME_QUERY,
-	REGISTER_MUTATION,
 	REVIEW_NAME_MUTATION,
 	SEED_NAMES_MUTATION,
 } from './graphql-operations';
@@ -30,27 +31,45 @@ describe('Request context isolation', () => {
 		const userB = 'concurrent_scope_user_b';
 		const password = 'password123';
 
-		const registerAResponse = await request(app)
+		// Create and login user A
+		await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: REGISTER_MUTATION,
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username: userA, password },
 			})
 			.set('Content-Type', 'application/json');
 
-		expect(registerAResponse.status).toBe(200);
-		const userAToken = (registerAResponse.body.data.register.accessToken as string) ?? '';
-
-		const registerBResponse = await request(app)
+		const loginAResponse = await request(app)
 			.post(GRAPHQL_ENDPOINT)
 			.send({
-				query: REGISTER_MUTATION,
+				query: LOGIN_MUTATION,
+				variables: { username: userA, password },
+			})
+			.set('Content-Type', 'application/json');
+
+		expect(loginAResponse.status).toBe(200);
+		const userAToken = loginAResponse.body.data.login.accessToken as string;
+
+		// Create and login user B
+		await request(app)
+			.post(GRAPHQL_ENDPOINT)
+			.send({
+				query: ADD_ONBOARDING_MEMBER_MUTATION,
 				variables: { username: userB, password },
 			})
 			.set('Content-Type', 'application/json');
 
-		expect(registerBResponse.status).toBe(200);
-		const userBToken = (registerBResponse.body.data.register.accessToken as string) ?? '';
+		const loginBResponse = await request(app)
+			.post(GRAPHQL_ENDPOINT)
+			.send({
+				query: LOGIN_MUTATION,
+				variables: { username: userB, password },
+			})
+			.set('Content-Type', 'application/json');
+
+		expect(loginBResponse.status).toBe(200);
+		const userBToken = loginBResponse.body.data.login.accessToken as string;
 
 		const nextNameForAResponse = await request(app)
 			.post(GRAPHQL_ENDPOINT)

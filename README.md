@@ -91,4 +91,4 @@ The project follows a modular monorepo structure:
 
 ---
 
-Built with ❤️ for new parents.
+Built with ❤️ for future parents.

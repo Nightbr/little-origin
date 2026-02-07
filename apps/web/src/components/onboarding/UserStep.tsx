@@ -31,15 +31,13 @@ export function UserStep({ users, onAddUser, error }: UserStepProps) {
 		<div className="space-y-6">
 			<div className="text-center">
 				<h2 className="text-2xl font-heading text-primary mb-2">Welcome to Little Origin</h2>
-				<p className="text-muted-foreground">
-					Add family members who will help choose your baby's name.
-				</p>
+				<p className="text-muted-foreground">Add members who will help choose your baby's name.</p>
 			</div>
 
 			{/* Added users list */}
 			{users.length > 0 && (
 				<div className="space-y-2">
-					<p className="text-sm font-medium text-charcoal">Added users:</p>
+					<p className="text-sm font-medium text-charcoal">Added members:</p>
 					<div className="flex flex-wrap gap-2">
 						{users.map((user) => (
 							<div
@@ -96,7 +94,7 @@ export function UserStep({ users, onAddUser, error }: UserStepProps) {
 					) : (
 						<>
 							<UserPlus size={20} />
-							Add User
+							Add Member
 						</>
 					)}
 				</button>
@@ -104,8 +102,8 @@ export function UserStep({ users, onAddUser, error }: UserStepProps) {
 
 			<p className="text-center text-sm text-muted-foreground">
 				{users.length === 0
-					? 'Add at least one user to continue.'
-					: `${users.length} user(s) added. Add more or continue.`}
+					? 'Add at least one member to continue.'
+					: `${users.length} member(s) added. Add more or continue.`}
 			</p>
 		</div>
 	);

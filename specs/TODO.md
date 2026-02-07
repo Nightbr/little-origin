@@ -18,18 +18,18 @@
 
 ### Filtering & Search
 
-- [ ] **Liked/Disliked List Filters**: Filter by gender and country origin.
-- [ ] **Liked/Disliked List Search**: Add search by name functionality.
-- [ ] **Matches Filters/Search**: Add filtering and search for the Matches view.
+- [x] **Liked/Disliked List Filters**: Filter by gender and country origin.
+- [x] **Liked/Disliked List Search**: Add search by name functionality.
+- [x] **Matches Filters/Search**: Add filtering and search for the Matches view.
 
 ### UI/UX Enhancements
 
 - [ ] **Swipe Card Button Animations**: Animate cards when using like/dislike buttons (not just gestures)
-- [ ] **Branding & Visual Identity**:
+- [x] **Branding & Visual Identity**:
   - Design and implement logo
   - Refine color palette and typography
   - Consistent icon set
-- [ ] **Full UI QA Pass**: Comprehensive review of all screens, interactions, and edge cases
+- [x] **Full UI QA Pass**: Comprehensive review of all screens, interactions, and edge cases
 
 ## Names Sourcing
 

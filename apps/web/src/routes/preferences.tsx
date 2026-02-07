@@ -87,7 +87,7 @@ function PreferencesView() {
 
 	return (
 		<div className="p-8 max-w-2xl mx-auto w-full">
-			<header className="mb-12">
+			<header className="mb-8">
 				<h1 className="text-4xl font-heading text-primary mb-2">Preferences</h1>
 				<p className="text-muted-foreground">Adjust your baby name search.</p>
 			</header>
