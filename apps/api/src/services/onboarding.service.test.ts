@@ -34,7 +34,7 @@ describe('OnboardingService Integration Tests', () => {
 	});
 
 	it('should add a user during onboarding', async () => {
-		const user = await onboardingService.addUser('onboard_user', 'password123');
+		const user = await onboardingService.addOnboardingMember('onboard_user', 'password123');
 		expect(user.username).toBe('onboard_user');
 
 		const hasUsers = await onboardingService.hasUsers();
@@ -57,7 +57,7 @@ describe('OnboardingService Integration Tests', () => {
 
 	it('should complete onboarding and seed names', async () => {
 		// Prepare: add a user
-		await onboardingService.addUser('final_user', 'password123');
+		await onboardingService.addOnboardingMember('final_user', 'password123');
 
 		const complete = await onboardingService.completeOnboarding();
 		expect(complete).toBe(true);
@@ -73,7 +73,7 @@ describe('OnboardingService Integration Tests', () => {
 	it('should block adding users after onboarding is complete', async () => {
 		await db.insert(appSettings).values({ id: 1, onboardingCompleted: true });
 
-		await expect(onboardingService.addUser('late_user', 'password123')).rejects.toThrow(
+		await expect(onboardingService.addOnboardingMember('late_user', 'password123')).rejects.toThrow(
 			'Onboarding already completed',
 		);
 	});

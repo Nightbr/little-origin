@@ -41,18 +41,6 @@ export const LOGIN_MUTATION = gql`
   }
 `;
 
-export const REGISTER_MUTATION = gql`
-  mutation Register($username: String!, $password: String!) {
-    register(username: $username, password: $password) {
-      accessToken
-      user {
-        id
-        username
-      }
-    }
-  }
-`;
-
 export const LOGOUT_MUTATION = gql`
   mutation Logout {
     logout
@@ -74,6 +62,15 @@ export const REFRESH_TOKEN_MUTATION = gql`
 export const DELETE_USER_MUTATION = gql`
   mutation DeleteUser($userId: ID!) {
     deleteUser(userId: $userId)
+  }
+`;
+
+export const ADD_MEMBER_MUTATION = gql`
+  mutation AddMember($username: String!, $password: String!) {
+    addMember(username: $username, password: $password) {
+      id
+      username
+    }
   }
 `;
 
@@ -174,9 +171,9 @@ export const APP_STATUS_QUERY = gql`
   }
 `;
 
-export const ADD_ONBOARDING_USER_MUTATION = gql`
-  mutation AddOnboardingUser($username: String!, $password: String!) {
-    addOnboardingUser(username: $username, password: $password) {
+export const ADD_ONBOARDING_MEMBER_MUTATION = gql`
+  mutation AddOnboardingMember($username: String!, $password: String!) {
+    addOnboardingMember(username: $username, password: $password) {
       id
       username
     }

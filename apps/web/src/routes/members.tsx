@@ -1,5 +1,5 @@
 import { DeleteUserDialog } from '@/components/lists/DeleteUserDialog';
-import { ALL_USERS_QUERY, DELETE_USER_MUTATION, REGISTER_MUTATION } from '@/graphql/operations';
+import { ADD_MEMBER_MUTATION, ALL_USERS_QUERY, DELETE_USER_MUTATION } from '@/graphql/operations';
 import { useAuth } from '@/hooks/useAuth';
 import { useMutation, useQuery } from '@apollo/client';
 import { createFileRoute, redirect } from '@tanstack/react-router';
@@ -29,7 +29,7 @@ function MembersView() {
 	const [loading, setLoading] = useState(false);
 	const [deleting, setDeleting] = useState(false);
 	const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
-	const [registerMutation] = useMutation(REGISTER_MUTATION);
+	const [addMemberMutation] = useMutation(ADD_MEMBER_MUTATION);
 	const [deleteUserMutation] = useMutation(DELETE_USER_MUTATION, {
 		refetchQueries: [{ query: ALL_USERS_QUERY }],
 	});
@@ -44,7 +44,7 @@ function MembersView() {
 		setLoading(true);
 
 		try {
-			await registerMutation({ variables: { username, password } });
+			await addMemberMutation({ variables: { username, password } });
 			setSuccess(true);
 			setUsername('');
 			setPassword('');

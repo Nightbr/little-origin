@@ -1,5 +1,5 @@
 import {
-	ADD_ONBOARDING_USER_MUTATION,
+	ADD_ONBOARDING_MEMBER_MUTATION,
 	APP_STATUS_QUERY,
 	COMPLETE_ONBOARDING_MUTATION,
 	SAVE_ONBOARDING_PREFERENCES_MUTATION,
@@ -36,7 +36,7 @@ export function OnboardingWizard() {
 	const [savingPrefs, setSavingPrefs] = useState(false);
 
 	const { refetch: refetchStatus } = useQuery(APP_STATUS_QUERY);
-	const [addUser] = useMutation(ADD_ONBOARDING_USER_MUTATION);
+	const [addUser] = useMutation(ADD_ONBOARDING_MEMBER_MUTATION);
 	const [savePrefs] = useMutation(SAVE_ONBOARDING_PREFERENCES_MUTATION);
 	const [completeOnboarding] = useMutation(COMPLETE_ONBOARDING_MUTATION);
 
@@ -44,7 +44,7 @@ export function OnboardingWizard() {
 		setError('');
 		try {
 			const res = await addUser({ variables: { username, password } });
-			const newUser = res.data.addOnboardingUser;
+			const newUser = res.data.addOnboardingMember;
 			setUsers([...users, newUser]);
 			await refetchStatus();
 			return true;
