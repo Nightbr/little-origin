@@ -11,17 +11,17 @@ interface UserData {
 	username: string;
 }
 
-export const Route = createFileRoute('/add-user')({
+export const Route = createFileRoute('/members')({
 	beforeLoad: ({ context }) => {
 		// Must be logged in to add new users
 		if (!context.auth.isAuthenticated) {
 			throw redirect({ to: '/login' });
 		}
 	},
-	component: AddUserView,
+	component: MembersView,
 });
 
-function AddUserView() {
+function MembersView() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');

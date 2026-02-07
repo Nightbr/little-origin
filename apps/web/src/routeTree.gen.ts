@@ -11,12 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PreferencesRouteImport } from './routes/preferences'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as MembersRouteImport } from './routes/members'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LikesRouteImport } from './routes/likes'
 import { Route as DislikesRouteImport } from './routes/dislikes'
 import { Route as AdvancedRouteImport } from './routes/advanced'
-import { Route as AddUserRouteImport } from './routes/add-user'
 import { Route as IndexRouteImport } from './routes/index'
 
 const PreferencesRoute = PreferencesRouteImport.update({
@@ -27,6 +27,11 @@ const PreferencesRoute = PreferencesRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MembersRoute = MembersRouteImport.update({
+  id: '/members',
+  path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesRoute = MatchesRouteImport.update({
@@ -54,11 +59,6 @@ const AdvancedRoute = AdvancedRouteImport.update({
   path: '/advanced',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AddUserRoute = AddUserRouteImport.update({
-  id: '/add-user',
-  path: '/add-user',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,35 +67,35 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/add-user': typeof AddUserRoute
   '/advanced': typeof AdvancedRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/members': typeof MembersRoute
   '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/add-user': typeof AddUserRoute
   '/advanced': typeof AdvancedRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/members': typeof MembersRoute
   '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/add-user': typeof AddUserRoute
   '/advanced': typeof AdvancedRoute
   '/dislikes': typeof DislikesRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/members': typeof MembersRoute
   '/onboarding': typeof OnboardingRoute
   '/preferences': typeof PreferencesRoute
 }
@@ -103,46 +103,46 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/add-user'
     | '/advanced'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/members'
     | '/onboarding'
     | '/preferences'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/add-user'
     | '/advanced'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/members'
     | '/onboarding'
     | '/preferences'
   id:
     | '__root__'
     | '/'
-    | '/add-user'
     | '/advanced'
     | '/dislikes'
     | '/likes'
     | '/login'
     | '/matches'
+    | '/members'
     | '/onboarding'
     | '/preferences'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AddUserRoute: typeof AddUserRoute
   AdvancedRoute: typeof AdvancedRoute
   DislikesRoute: typeof DislikesRoute
   LikesRoute: typeof LikesRoute
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRoute
+  MembersRoute: typeof MembersRoute
   OnboardingRoute: typeof OnboardingRoute
   PreferencesRoute: typeof PreferencesRoute
 }
@@ -161,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/members': {
+      id: '/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof MembersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches': {
@@ -198,13 +205,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdvancedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/add-user': {
-      id: '/add-user'
-      path: '/add-user'
-      fullPath: '/add-user'
-      preLoaderRoute: typeof AddUserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -217,12 +217,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AddUserRoute: AddUserRoute,
   AdvancedRoute: AdvancedRoute,
   DislikesRoute: DislikesRoute,
   LikesRoute: LikesRoute,
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRoute,
+  MembersRoute: MembersRoute,
   OnboardingRoute: OnboardingRoute,
   PreferencesRoute: PreferencesRoute,
 }
