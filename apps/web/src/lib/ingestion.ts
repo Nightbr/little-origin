@@ -23,7 +23,7 @@ export function getStatus(isIngesting: boolean, error: string | null): StatusTyp
 	return 'ready';
 }
 
-export interface StatusBadgeVariant {
+interface StatusBadgeVariant {
 	bg: string;
 	text: string;
 	label: string;

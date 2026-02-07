@@ -1,8 +1,9 @@
 import { appSettings, users } from '@little-origin/core';
-import { eq } from 'drizzle-orm';
 import type { Express } from 'express';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { db } from '../db/client';
+import { runMigrations } from '../db/migrate';
 import {
 	ADD_MEMBER_MUTATION,
 	ADD_ONBOARDING_MEMBER_MUTATION,
@@ -12,8 +13,6 @@ import {
 	LOGIN_MUTATION,
 	ME_QUERY,
 } from './graphql-operations';
-import { db } from '../db/client';
-import { runMigrations } from '../db/migrate';
 import { createTestApp } from './test-server';
 
 let app: Express;

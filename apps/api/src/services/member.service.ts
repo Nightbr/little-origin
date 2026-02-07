@@ -36,7 +36,7 @@ class MemberService {
 		return { id: user.id, username: user.username };
 	}
 
-	async deleteUser(userId: number, requestingUserId: number): Promise<void> {
+	async deleteUser(userId: number, _requestingUserId: number): Promise<void> {
 		// Prevent deleting last user
 		const userCount = await db.select({ count: count() }).from(users);
 		if (userCount[0].count <= 1) {

@@ -39,7 +39,10 @@ class OnboardingService {
 	/**
 	 * Add a member during onboarding (no token returned)
 	 */
-	async addOnboardingMember(username: string, password: string): Promise<{ id: number; username: string }> {
+	async addOnboardingMember(
+		username: string,
+		password: string,
+	): Promise<{ id: number; username: string }> {
 		// Check if onboarding is already complete
 		const isComplete = await this.isOnboardingComplete();
 		if (isComplete) {

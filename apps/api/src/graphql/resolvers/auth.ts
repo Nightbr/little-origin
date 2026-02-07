@@ -1,8 +1,8 @@
 import { users } from '@little-origin/core';
 import { db } from '../../db/client';
 import { authService } from '../../services/auth.service';
-import { memberService } from '../../services/member.service';
 import { matchService } from '../../services/match.service';
+import { memberService } from '../../services/member.service';
 import { REFRESH_TOKEN_COOKIE_OPTIONS } from '../../utils/jwt';
 import type { GraphQLContext } from '../types';
 
