@@ -42,6 +42,7 @@ const config: Config = {
 
 	themeConfig: {
 		image: 'img/docusaurus-social-card.jpg',
+		logo: 'img/logo.png',
 		navbar: {
 			title: 'Little Origin',
 			items: [

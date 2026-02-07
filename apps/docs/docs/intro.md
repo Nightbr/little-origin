@@ -2,6 +2,8 @@
 sidebar_position: 1
 ---
 
+![Little Origin Logo](/img/logo.png)
+
 # Welcome to Little Origin
 
 **Little Origin** is a collaborative baby name recommendation app that helps partners find the perfect name together. Built with modern web technologies, it features an intuitive swipe interface, real-time matching, and support for names from around the world.
