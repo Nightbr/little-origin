@@ -9,6 +9,9 @@ export default function Home(): JSX.Element {
 				{/* Hero Section */}
 				<section className="hero">
 					<div className="hero__badge">Open Source • Self-Hosted • Private</div>
+					<div className="hero__logo">
+						<img src={'img/logo.png'} alt="Little Origin Logo" />
+					</div>
 					<Heading as="h1" className="hero__title">
 						Find the perfect baby name, together
 					</Heading>
@@ -23,20 +26,6 @@ export default function Home(): JSX.Element {
 						<Link className="button button--secondary" to="/docs/intro">
 							How it Works
 						</Link>
-					</div>
-					<div className="hero__stats">
-						<div className="stat">
-							<div className="stat__value">52K+</div>
-							<div className="stat__label">Baby Names</div>
-						</div>
-						<div className="stat">
-							<div className="stat__value">7</div>
-							<div className="stat__label">Countries</div>
-						</div>
-						<div className="stat">
-							<div className="stat__value">100%</div>
-							<div className="stat__label">Private</div>
-						</div>
 					</div>
 				</section>
 

@@ -17,7 +17,7 @@ Always create a backup before updating:
 cd little-origin
 
 # Create a backup
-tar -czf backup-$(date +%Y%m%d).tar.gz ./data/
+tar -czf backup-$(date +%Y%m%d).tar.gz .data/
 ```
 
 :::
@@ -96,7 +96,7 @@ Check that the application is running correctly:
 docker compose ps
 
 # Check health endpoint
-curl http://localhost:4000/health
+curl http://localhost:3000/health
 
 # View logs
 docker compose logs -f little-origin
@@ -247,10 +247,10 @@ docker compose up -d
 
 ```bash
 # Backup current data
-tar -czf emergency-backup.tar.gz ./data/
+tar -czf emergency-backup.tar.gz .data/
 
 # Reset database
-rm -rf ./data
+rm -rf .data
 docker compose down
 docker compose up -d
 ```
