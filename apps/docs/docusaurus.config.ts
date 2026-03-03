@@ -54,8 +54,9 @@ const config: Config = {
 				},
 				{
 					href: 'https://github.com/Nightbr/little-origin',
-					label: 'GitHub',
 					position: 'right',
+					className: 'header-github-link',
+					'aria-label': 'GitHub repository',
 				},
 			],
 		},
