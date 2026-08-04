@@ -4,314 +4,77 @@ sidebar_position: 1
 
 # Development Setup
 
-Set up a local development environment to contribute to Little Origin or customize it for your needs.
-
 ## Prerequisites
 
-Before you begin, ensure you have:
-
-- **Node.js** >= 24.0.0 (Use [mise](https://mise.jdx.dev/) or [nvm](https://github.com/nvm-sh/nvm))
-- **pnpm** >= 10.0.0 (Install with `npm install -g pnpm`)
-- **Git** for version control
-- A code editor (VS Code recommended)
+- **Node.js** >= 24 and **pnpm** >= 10 — or just install [mise](https://mise.jdx.dev/) and run `mise install` to get everything, including the Python toolchain for the name generator
 
 ## Quick Start
-
-### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Nightbr/little-origin.git
 cd little-origin
-```
-
-### 2. Install Dependencies
-
-```bash
 pnpm install
-```
 
-This installs dependencies for all packages and apps.
+# Create .env at the repository root
+echo "JWT_SECRET=development-secret-for-local-testing" > .env
 
-### 3. Set Up Environment Variables
-
-Create a `.env` file in the project root:
-
-```bash
-JWT_SECRET=development-secret-for-local-testing
-```
-
-### 4. Start Development Servers
-
-```bash
 pnpm dev
 ```
 
-This starts both the frontend and backend in watch mode:
+- **Web:** http://localhost:3001
+- **API / GraphQL Playground:** http://localhost:3000/graphql
 
-- **Frontend (Web):** http://localhost:5173
-- **Backend (API):** http://localhost:3000
-- **GraphQL Playground:** http://localhost:3000/graphql
+The SQLite database is created automatically at `.data/database.db`, and the app walks you through onboarding on first visit.
 
-## Project Structure
-
-```
-little-origin/
-├── apps/
-│   ├── web/          # React + Vite frontend
-│   └── api/          # Express + Apollo GraphQL backend
-├── packages/
-│   ├── core/         # Shared schemas, types, constants
-│   └── name-data/    # Name data loader
-└── .data/            # SQLite database (local)
-```
-
-## Development Workflow
-
-### Running Individual Apps
-
-Start specific apps:
+## Everyday Commands
 
 ```bash
-# Frontend only
-pnpm --filter @little-origin/web dev
-
-# Backend only
-pnpm --filter @little-origin/api dev
+pnpm dev              # web + api in watch mode
+pnpm test             # run all tests (Vitest)
+pnpm lint             # lint (Biome)
+pnpm format           # format + organize imports
+pnpm typecheck        # TypeScript checks
+pnpm deps:check       # workspace version mismatches
+pnpm deps:unused      # unused dependencies (Knip)
 ```
 
-### Running Tests
+Run a single app with `pnpm --filter @little-origin/api dev` (or `web`).
 
-Run tests for all packages:
-
-```bash
-pnpm test
-```
-
-Run tests for a specific package:
-
-```bash
-# In package directory
-pnpm test:watch
-```
-
-### Type Checking
-
-Type check all packages:
-
-```bash
-pnpm typecheck
-```
-
-### Linting
-
-Check code with Biome:
-
-```bash
-pnpm lint
-```
-
-Auto-fix issues:
-
-```bash
-pnpm format
-```
-
-### Dependency Management
-
-Check for version mismatches:
-
-```bash
-pnpm deps:check
-```
-
-Fix version mismatches:
-
-```bash
-pnpm deps:fix
-```
-
-Find unused dependencies:
-
-```bash
-pnpm deps:unused
-```
-
-## Database Setup
-
-### Local SQLite Database
-
-The database is automatically created on API startup:
-
-```
-.data/little-origin.db
-```
-
-### Running Migrations
-
-Apply database migrations:
-
-```bash
-cd apps/api
-pnpm db:migrate
-```
-
-Generate new migrations:
-
-```bash
-cd apps/api
-pnpm db:generate
-```
-
-### Database Schema
-
-The schema is defined in `packages/core/src/db/schema.ts`. See [Architecture](/docs/development/architecture) for details.
-
-## Development Tools
-
-### GraphQL Playground
-
-Explore the GraphQL API at http://localhost:3000/graphql:
-
-- **Query** - Fetch data
-- **Mutate** - Modify data
-- **Subscribe** - Real-time updates
-- **Docs** - API documentation
-
-### Database Inspector
-
-View SQLite database contents:
-
-```bash
-sqlite3 .data/little-origin.db
-```
-
-Useful commands:
-
-```sql
-.tables
-.schema users
-SELECT * FROM reviews LIMIT 10;
-```
-
-### VS Code Extensions
-
-Recommended extensions for development:
-
-- **Biome** - Linting and formatting
-- **GraphQL** - Syntax highlighting
-- **TypeScript** - Type checking
-- **Vitest** - Test runner
-- **GitLens** - Git superpowers
-
-## Common Tasks
-
-### Adding a New GraphQL Query
-
-1. **Define the schema** in `apps/api/src/graphql/schema.ts`
-2. **Implement the resolver** in `apps/api/src/graphql/resolvers/`
-3. **Add authentication** if needed (see existing resolvers)
-4. **Test in GraphQL Playground**
-
-### Adding a New Database Table
-
-1. **Update the schema** in `packages/core/src/db/schema.ts`
-2. **Generate migration** `pnpm db:generate`
-3. **Apply migration** `pnpm db:migrate`
-4. **Update TypeScript types** if needed
-
-### Modifying the Frontend
-
-The web app uses:
-
-- **TanStack Router** - File-based routing (`apps/web/src/routes`)
-- **Apollo Client** - GraphQL client
-- **Framer Motion** - Animations
-- **React** - UI framework
-
-Routes are auto-generated from files in `apps/web/src/routes`.
-
-### Adding Name Data
-
-To add new name data sources:
-
-1. **Create JSON file** in `packages/name-data/src/data/`
-2. **Update loader** in `packages/name-data/src/index.ts`
-3. **Rebuild** `pnpm --filter @little-origin/name-data build`
-
-## Troubleshooting
-
-### Port Already in Use
-
-If ports are already in use:
-
-```bash
-# Kill process on port 3000
-lsof -ti:3000 | xargs kill -9
-
-# Or change ports in package.json scripts
-```
-
-### Native Module Build Errors
-
-If `better-sqlite3` or `argon2` fail to build:
-
-```bash
-# Rebuild native modules
-pnpm rebuild
-
-# Ensure build tools are installed
-# macOS: xcode-select --install
-# Ubuntu: sudo apt-get install build-essential
-```
-
-### Dependency Conflicts
-
-If you have dependency issues:
-
-```bash
-# Clean install
-rm -rf node_modules apps/*/node_modules packages/*/node_modules
-pnpm install
-
-# Fix version mismatches
-pnpm deps:fix
-```
-
-### Database Errors
-
-If database operations fail:
-
-```bash
-# Reset database
-rm .data/little-origin.db
-pnpm --filter @little-origin/api dev
-```
-
-## Pre-commit Quality Check
-
-Before committing, always run:
+Before committing, run the same check as CI:
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm deps:check && pnpm deps:unused
 ```
 
-This is the same check that runs in CI.
+## Database
 
-## Contributing
+Schemas live in `packages/core`; migrations apply automatically when the API starts. After changing a schema:
 
-See [Contributing Guide](/docs/development/contributing) for:
+```bash
+cd apps/api
+pnpm db:generate   # create migration
+pnpm db:migrate    # apply it
+```
 
-- Code style guidelines
-- Commit message conventions
-- Pull request process
-- Community guidelines
+Inspect the data anytime with `sqlite3 .data/database.db`.
 
-## Architecture
+## Common Tasks
 
-For deep dive into the codebase, see [Architecture](/docs/development/architecture).
+- **New query/mutation** — add it to `apps/api/src/graphql/typeDefs.ts`, implement the resolver and service, test in the Playground
+- **New table** — edit the schema in `packages/core`, then `pnpm db:generate` + `pnpm db:migrate`
+- **Frontend routes** — add a file under `apps/web/src/routes/`; TanStack Router regenerates the route tree
+- **Name data** — see [Name Data & Generator](/docs/development/name-data)
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Port already in use | `lsof -ti:3000 \| xargs kill -9` |
+| `better-sqlite3` / `argon2` build errors | `pnpm rebuild` (macOS: `xcode-select --install`) |
+| Dependency conflicts | `rm -rf node_modules **/node_modules && pnpm install` |
+| Database errors | `rm .data/database.db` and restart — it's recreated |
 
 ## Next Steps
 
-- **[Architecture overview](/docs/development/architecture)** - Understand the codebase structure
-- **[Contributing](/docs/development/contributing)** - Learn how to contribute
-- **[Deployment guide](/docs/deployment)** - Deploy your changes
+- **[Architecture](/docs/development/architecture)** - How the codebase fits together
+- **[Contributing](/docs/development/contributing)** - Branching, commits, PRs

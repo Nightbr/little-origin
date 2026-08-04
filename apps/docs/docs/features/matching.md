@@ -4,69 +4,25 @@ sidebar_position: 2
 
 # Real-time Matching
 
-A match occurs when both partners like the same name.
+A match happens when both partners like the same name.
 
-## How Matching Works
+## How It Works
 
-### The Match Process
+You each swipe independently — nobody sees the other's likes. The moment you both like the same name, a match popup appears on every device instantly, no refresh needed.
 
-1. **Both Partners Swipe Right** - You and your partner each like a name
-2. **Detection** - The system detects mutual interest
-3. **Instant Notification** - Both partners receive a match notification
-4. **Saved to List** - The name is added to your matches collection
+<p>
+  <img src={require('@site/static/img/screenshots/match-popup.png').default} alt="It's a Match! popup showing the matched name and who liked it" width="300" />
+</p>
 
-### Real-time Technology
+## Your Matches
 
-Matches are delivered using WebSocket subscriptions (GraphQL).
+Every match is saved to a shared shortlist showing the name and who liked it.
 
-## Match Notifications
-
-When a match occurs, you receive an in-app notification.
-
-### Match Information
-
-Each match shows:
-
-- **Baby Name** - The name you both liked
-- **Time of Match** - When it happened
-- **Number of Users** - How many users liked the name
-
-## Viewing Your Matches
-
-Access all your matches from the matches page in the app.
-
-## Technical Details
-
-### WebSocket Connection
-
-The match system uses GraphQL subscriptions:
-
-```graphql
-subscription OnMatchCreated {
-  matchCreated {
-    id
-    name {
-      id
-      name
-      gender
-      originCountry
-    }
-    userCount
-    matchedAt
-  }
-}
-```
-
-### Match Detection
-
-The system checks for matches by looking for names where multiple users have submitted positive reviews.
-
-## Related Features
-
-- **[Swiping](/docs/features/swiping)** - How to like names and create matches
-- **[Names](/docs/features/names)** - Explore the name database
+<p>
+  <img src={require('@site/static/img/screenshots/matches.png').default} alt="Matches page listing names liked by both partners" width="300" />
+</p>
 
 ## Next Steps
 
-- **[Start swiping](/docs/features/swiping)** - Begin finding matches
-- **[Deploy your instance](/docs/deployment)** - Get Little Origin running
+- **[Swiping](/docs/features/swiping)** - How to like names
+- **[Collaboration](/docs/features/collaboration)** - Swiping as a team

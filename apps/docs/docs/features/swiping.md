@@ -4,76 +4,30 @@ sidebar_position: 1
 
 # Swiping Interface
 
-The swiping interface lets you explore baby names by liking or passing on each name.
+Explore baby names one card at a time — like the ones you love, pass on the rest.
 
-## How Swiping Works
+<p>
+  <img src={require('@site/static/img/screenshots/swipe-deck.png').default} alt="Swipe interface with a name card, heart and pass buttons" width="300" />
+</p>
 
-### Basic Gestures
+## How It Works
 
-- **Swipe Right** - Like a name
-- **Swipe Left** - Pass on a name
-- **Undo** - Undo your last swipe
+Each card shows the name, its gender, the country of origin, and your family name underneath — so you can hear how it sounds together.
 
-### Card Stack
+- **Swipe right** (or tap ❤️) to like
+- **Swipe left** (or tap ✕) to pass
+- **Undo** to take back your last swipe
 
-Names are presented one at a time as cards.
+Works with touch gestures on mobile and drag or buttons on desktop. Names are filtered by your shared [preferences](/docs/features/names#filtering) — gender, origins, and maximum length.
 
-### Name Card Information
+## Your Lists
 
-Each card displays:
+Every decision is saved. Browse, search, and filter your liked and passed names anytime from the menu.
 
-- **Baby Name** - The name
-- **Gender** - Male or Female
-- **Country of Origin** - Country name
-
-## Interaction Methods
-
-### Touch / Swipe
-
-On touch devices:
-- Swipe right with your finger to like
-- Swipe left with your finger to pass
-
-### Mouse / Trackpad
-
-On desktop:
-- Click and drag to swipe
-- Use the on-screen buttons
-
-### Button Controls
-
-- **Heart Button** - Like the name
-- **X Button** - Pass on the name
-- **Undo Button** - Undo last action
-
-## Preferences & Filtering
-
-Configure your preferences in the app settings.
-
-### Country Selection
-
-Choose which countries' names to include.
-
-### Gender Filter
-
-- **Male** - Male names
-- **Female** - Female names
-- **Both** - Show names from both categories
-
-### Maximum Characters
-
-Set the maximum name length you want to see.
+<p>
+  <img src={require('@site/static/img/screenshots/liked-names.png').default} alt="Liked Names list with search and filters" width="300" />
+</p>
 
 ## Match Detection
 
-When both partners swipe right on the same name, it's a **match**!
-
-- **Instant Notification** - Real-time match notification
-- **Saved to List** - Automatically added to your matches list
-
-See [Matching](/docs/features/matching) for details.
-
-## Related Features
-
-- **[Matching](/docs/features/matching)** - Learn how matches are detected
-- **[Names](/docs/features/names)** - Understand the name database
+When both partners like the same name, it's a **match** — you're notified instantly. See [Matching](/docs/features/matching).

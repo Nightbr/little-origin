@@ -307,6 +307,68 @@ html[data-theme="dark"] .button--secondary:hover {
 	font-size: 1.125rem;
 }
 
+/* App showcase — phone mockups */
+.showcase {
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	gap: 2.5rem;
+	flex-wrap: wrap;
+}
+
+.phone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.25rem;
+}
+
+.phone__frame {
+	position: relative;
+	width: 230px;
+	padding: 12px;
+	border-radius: 2.5rem;
+	background: #3d403d;
+	box-shadow: 0 24px 48px rgba(61, 64, 61, 0.2), 0 4px 12px rgba(61, 64, 61, 0.12);
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.phone:hover .phone__frame {
+	transform: translateY(-8px);
+}
+
+.phone__screen {
+	display: block;
+	width: 100%;
+	border-radius: 1.75rem;
+}
+
+.phone--featured .phone__frame {
+	width: 264px;
+}
+
+.phone__caption {
+	font-weight: 600;
+	color: #5d605d;
+	margin: 0;
+	font-size: 0.9375rem;
+}
+
+html[data-theme="dark"] .phone__frame {
+	border: 1px solid rgba(232, 156, 132, 0.25);
+	box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 24px rgba(232, 156, 132, 0.08);
+}
+
+html[data-theme="dark"] .phone__caption {
+	color: #bacab2;
+}
+
+@media (max-width: 768px) {
+	.showcase {
+		gap: 2rem;
+	}
+}
+
 /* Feature cards */
 .features {
 	display: grid;
@@ -452,7 +514,7 @@ html[data-theme="dark"] .navbar__title {
 
 /* GitHub icon in navbar */
 .header-github-link::before {
-	content: '';
+	content: "";
 	width: 24px;
 	height: 24px;
 	display: flex;

@@ -1,52 +1,31 @@
 ---
 sidebar_position: 1
+sidebar_label: Introduction
 ---
-
-![Little Origin Logo](/img/logo.png)
 
 # Welcome to Little Origin
 
-**Little Origin** is a collaborative baby name app that helps partners find names together. Features a swipe interface and real-time matching.
+<div style={{textAlign: 'center'}}>
+	<img src={require('@site/static/img/logo.png').default} alt="Little Origin Logo" width="140" />
+</div>
 
-## What is Little Origin?
+**Little Origin** is a collaborative baby name app for partners. Swipe through curated names, and get notified the moment you both like the same one.
 
-Little Origin helps you and your partner choose a baby name:
-
-- **Swipe** through baby names from multiple countries
-- **Like** names individually and get notified when you both like the same name
-- **Filter** by gender, country of origin, and maximum name length
+<div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem'}}>
+  <img src={require('@site/static/img/screenshots/swipe-deck.png').default} alt="Swipe interface showing a name card" width="220" />
+  <img src={require('@site/static/img/screenshots/match-popup.png').default} alt="It's a Match! popup notification" width="220" />
+  <img src={require('@site/static/img/screenshots/matches.png').default} alt="Matches list" width="220" />
+</div>
 
 ## Key Features
 
-### Swiping Interface
-- Swipe right to like a name, left to pass
-- Card-based interface with animations
-
-### Real-time Matching
-- Instant notification when both partners like the same name
-- WebSocket-based real-time updates
-
-### Name Database
-- Names from multiple countries
-- Filter by gender and country of origin
-- Set maximum character length for names
-
-### Self-hosted
-- Deploy on your own infrastructure
-- Your data stays on your server
-- SQLite database (single file)
-
-## Tech Stack
-
-- **Frontend:** React, Vite, TanStack Router, Apollo Client, Framer Motion
-- **Backend:** Express, Apollo GraphQL, Drizzle ORM
-- **Database:** SQLite
-- **Authentication:** JWT with refresh token rotation, Argon2 password hashing
-- **Real-time:** GraphQL WebSocket subscriptions
+- **Swipe** - Like or pass on names from 7 countries, one card at a time
+- **Match** - Instant notification when you both like the same name, saved to a shared shortlist
+- **Filter** - Shared preferences for gender, origins, name length, and your family name
+- **Private** - Self-hosted on your own server; no ads, no tracking
 
 ## What's Next?
 
-- **[Deploy now](/docs/deployment)** - Get Little Origin running with Docker Compose
-- **[Configure your instance](/docs/configuration)** - Customize name sources and preferences
-- **[Explore features](/docs/features/swiping)** - Learn about swiping, matching, and collaboration
-- **[Contribute](/docs/development/contributing)** - Join our community and help improve Little Origin
+- **[Explore features](/docs/features/swiping)** - Swiping, matching, and collaboration
+- **[Deploy now](/docs/deployment/)** - Get running with Docker Compose
+- **[Contribute](/docs/development/contributing)** - Help improve Little Origin

@@ -1,6 +1,9 @@
+import Link from '@docusaurus/Link';
+import matchPopupImg from '@site/static/img/screenshots/match-popup.png';
+import matchesImg from '@site/static/img/screenshots/matches.png';
+import swipeDeckImg from '@site/static/img/screenshots/swipe-deck.png';
 import Heading from '@theme/Heading';
 import Layout from '@theme/Layout';
-import Link from '@docusaurus/Link';
 
 export default function Home(): JSX.Element {
 	return (
@@ -20,12 +23,55 @@ export default function Home(): JSX.Element {
 						intuitive swipe interface. Real-time matching, global names, complete privacy.
 					</p>
 					<div className="hero__buttons">
-						<Link className="button button--primary" to="/docs/deployment">
+						<Link className="button button--primary" to="/docs/deployment/">
 							Deploy Now
 						</Link>
 						<Link className="button button--secondary" to="/docs/intro">
 							How it Works
 						</Link>
+					</div>
+				</section>
+
+				{/* App Showcase */}
+				<section className="section section--alt">
+					<div className="section__header">
+						<Heading as="h2">See It in Action</Heading>
+						<p className="section__subtitle">A swipe-first experience designed for two</p>
+					</div>
+
+					<div className="showcase">
+						<div className="phone">
+							<div className="phone__frame">
+								<img
+									className="phone__screen"
+									src={swipeDeckImg}
+									alt="Swipe interface showing a name card with like and pass buttons"
+								/>
+							</div>
+							<p className="phone__caption">Swipe through curated names</p>
+						</div>
+
+						<div className="phone phone--featured">
+							<div className="phone__frame">
+								<img
+									className="phone__screen"
+									src={matchPopupImg}
+									alt="It's a Match! notification shown when both partners like the same name"
+								/>
+							</div>
+							<p className="phone__caption">Get matched in real time</p>
+						</div>
+
+						<div className="phone">
+							<div className="phone__frame">
+								<img
+									className="phone__screen"
+									src={matchesImg}
+									alt="Matches page listing the names both partners liked"
+								/>
+							</div>
+							<p className="phone__caption">Build your shortlist together</p>
+						</div>
 					</div>
 				</section>
 
@@ -183,7 +229,7 @@ export default function Home(): JSX.Element {
 							in minutes with Docker Compose.
 						</p>
 						<div className="cta__buttons">
-							<Link className="button button--primary button--large" to="/docs/deployment">
+							<Link className="button button--primary button--large" to="/docs/deployment/">
 								Get Started Free
 							</Link>
 							<a
