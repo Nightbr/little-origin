@@ -12,6 +12,18 @@
 			"entry": ["src/main.tsx"],
 			"project": ["src/**/*.ts", "src/**/*.tsx"]
 		},
+		"apps/docs": {
+			"entry": ["sidebars.ts", "src/pages/**/*.tsx"],
+			"project": ["src/**/*.ts", "src/**/*.tsx"],
+			"ignoreDependencies": [
+				"@docusaurus/preset-classic",
+				"@docusaurus/types",
+				"prism-react-renderer",
+				"@docusaurus/Link",
+				"@theme/Heading",
+				"@theme/Layout"
+			]
+		},
 		"packages/*": {
 			"project": ["src/**/*.ts"]
 		}

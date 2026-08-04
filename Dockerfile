@@ -30,7 +30,8 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages/core/node_modules ./packages/core/node_modules
 COPY --from=deps /app/packages/name-data/node_modules ./packages/name-data/node_modules
 COPY . .
-RUN pnpm turbo run build
+# Build only what the image ships (docs is deployed separately to GitHub Pages)
+RUN pnpm turbo run build --filter=@little-origin/api --filter=@little-origin/web
 
 # ============================================
 # Production stage - API + static web files

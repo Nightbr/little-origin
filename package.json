@@ -3,7 +3,8 @@
 	"private": true,
 	"scripts": {
 		"predev": "turbo build",
-		"dev": "turbo dev",
+		"dev": "turbo dev --filter=!@little-origin/docs",
+		"docs": "turbo dev --filter=@little-origin/docs",
 		"build": "turbo build",
 		"lint": "turbo lint",
 		"format": "turbo format",

@@ -1,11 +1,8 @@
 # Little Origin 👶✨
 
-> [!CAUTION]
-> **Work In Progress**: This project is currently in active development. Features are being added and refactored frequently.
-
 The Best Way to Choose Your Baby's Name.
 
-[About](#-about) • [Features](#-features) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture)
+[About](#-about) • [Features](#-features) • [Screenshots](#-screenshots) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture) • [Documentation](https://nightbr.github.io/little-origin/)
 
 "A name is the first gift a parent gives a child."
 
@@ -21,6 +18,22 @@ The Best Way to Choose Your Baby's Name.
 - **💓 Real-time Matching**: Instant notifications when you and your partner both "Like" a name.
 - **🌍 Global Name Sourcing**: Integrated static data and API access to names from over 7 countries.
 - **🔐 Data Security**: Self-hosted solution with secure authentication (JWT + Argon2).
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="apps/docs/static/img/screenshots/swipe-deck.png" alt="Swipe interface with a name card" width="260" />
+  &nbsp;
+  <img src="apps/docs/static/img/screenshots/match-popup.png" alt="It's a Match! real-time notification" width="260" />
+  &nbsp;
+  <img src="apps/docs/static/img/screenshots/matches.png" alt="Matches list" width="260" />
+</p>
+
+<p align="center">
+  <em>Swipe through names, get notified in real time when you both like the same one, and review your matches.</em>
+</p>
+
+More screenshots in the [documentation](https://nightbr.github.io/little-origin/).
 
 ## 🚀 Getting Started
 

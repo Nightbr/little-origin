@@ -17,6 +17,7 @@ coverage
 # Tooling caches
 .turbo
 .tanstack
+.docusaurus
 
 # Logs
 *.log
